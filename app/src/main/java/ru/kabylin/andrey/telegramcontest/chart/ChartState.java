@@ -5,10 +5,8 @@ import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartState {
-//    final List<Vertex> points;
-//    List<Vertex> minimapPoints;
-//    List<Vertex> previewPoints;
+// TODO: Encapsulation
+class ChartState {
     int minimapPreviewPosition = 100;
     int minimapPreviewSize = 100;
     Rect minimapRect = null;

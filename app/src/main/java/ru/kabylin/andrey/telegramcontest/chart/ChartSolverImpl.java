@@ -6,10 +6,10 @@ import android.support.v4.math.MathUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestChartSolver implements ChartSolver {
+public class ChartSolverImpl implements ChartSolver {
     private final ChartState chartState;
 
-    TestChartSolver() {
+    ChartSolverImpl() {
         final List<Vertex> chart0Points = new ArrayList<>();
         final List<Vertex> chart1Points = new ArrayList<>();
 

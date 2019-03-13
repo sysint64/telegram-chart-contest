@@ -10,7 +10,6 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
@@ -36,7 +35,8 @@ public final class ChartView extends View {
     }
 
     final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    final ChartSolver chartSolver = new TestChartSolver();
+    final ChartSolver chartSolver = new ChartSolverImpl();
+    final ChartUserInteractor userInteractor = new ChartUserInteractorImpl(chartSolver);
 
     private Rect minimapRect = new Rect();
     private Rect previewRect = new Rect();
@@ -126,60 +126,9 @@ public final class ChartView extends View {
         }
     }
 
-    private State state = State.NONE;
-
-    enum State {
-        NONE,
-        MINIMAP_MOVE
-    }
-
-    private float lastTouchX = 0;
-    private float lastTouchY = 0;
-
-    private float onActionDownTouchX = 0;
-    private float onActionDownTouchY = 0;
-
-    private float onActionDownMinimapPreviewPosition = 0;
-
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
-        final float touchX = event.getX();
-        final float touchY = event.getY();
-
-        final ChartState chartState = chartSolver.getState();
-        final Rect previewRect = chartState.getMinimapPreviewRect();
-
-        boolean result = false;
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                onActionDownTouchX = touchX;
-                onActionDownTouchY = touchY;
-
-                if (touchX > previewRect.left && touchX < previewRect.right &&
-                        touchY > previewRect.top && touchY < previewRect.bottom)
-                {
-                    state = State.MINIMAP_MOVE;
-                    onActionDownMinimapPreviewPosition = chartState.minimapPreviewPosition;
-                    Log.d("ChartView", "update state to MINIMAP_MOVE");
-                    result = true;
-                    break;
-                }
-
-            case MotionEvent.ACTION_UP:
-                state = State.NONE;
-                Log.d("ChartView", "update state to NONE");
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                chartSolver.setMinimapPoisiton(onActionDownMinimapPreviewPosition + touchX - onActionDownTouchX);
-                break;
-        }
-
-        lastTouchX = touchX;
-        lastTouchY = touchY;
-
-        return result;
+        return userInteractor.onTouchEvent(event);
     }
 }
