@@ -2,7 +2,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Rect;
 
-public interface ChartService {
+public interface ChartSolver {
     ChartState getState();
 
     void calculateMinimapPoints(final Rect rect);

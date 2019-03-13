@@ -36,7 +36,7 @@ public final class ChartView extends View {
     }
 
     final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    final ChartService chartService = new TestChartService();
+    final ChartSolver chartSolver = new TestChartSolver();
 
     private Rect minimapRect = new Rect();
     private Rect previewRect = new Rect();
@@ -61,8 +61,8 @@ public final class ChartView extends View {
                 /* bottom */ getHeight()
         );
 
-        chartService.calculateMinimapPoints(minimapRect);
-        final ChartState state = chartService.getState();
+        chartSolver.calculateMinimapPoints(minimapRect);
+        final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(1);
 
@@ -73,7 +73,7 @@ public final class ChartView extends View {
     }
 
     private void drawMinimapPreview(Canvas canvas) {
-        final ChartState state = chartService.getState();
+        final ChartState state = chartSolver.getState();
 
         paint.setColor(Color.BLUE);
         paint.setStrokeWidth(2);
@@ -103,8 +103,8 @@ public final class ChartView extends View {
                 /* bottom */ getHeight() - (int) MeasureUtils.convertDpToPixel(50)
         );
 
-        chartService.calculatePreviewPoints(previewRect);
-        final ChartState state = chartService.getState();
+        chartSolver.calculatePreviewPoints(previewRect);
+        final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(2);
 
@@ -147,7 +147,7 @@ public final class ChartView extends View {
         final float touchX = event.getX();
         final float touchY = event.getY();
 
-        final ChartState chartState = chartService.getState();
+        final ChartState chartState = chartSolver.getState();
         final Rect previewRect = chartState.getMinimapPreviewRect();
 
         boolean result = false;
@@ -173,7 +173,7 @@ public final class ChartView extends View {
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                chartService.setMinimapPoisiton(onActionDownMinimapPreviewPosition + touchX - onActionDownTouchX);
+                chartSolver.setMinimapPoisiton(onActionDownMinimapPreviewPosition + touchX - onActionDownTouchX);
                 break;
         }
 
