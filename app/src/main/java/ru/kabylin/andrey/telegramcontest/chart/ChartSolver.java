@@ -9,5 +9,9 @@ public interface ChartSolver {
 
     void calculatePreviewPoints(final Rect rect);
 
-    void setMinimapPoisiton(final float newPosition);
+    void setMinimapPosition(final float newPosition);
+
+    void setMinimapLeft(final float newLeft);
+
+    void setMinimapRight(final float newRight);
 }

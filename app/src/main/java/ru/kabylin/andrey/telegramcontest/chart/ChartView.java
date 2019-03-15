@@ -93,6 +93,25 @@ public final class ChartView extends View {
 
         canvas.drawRect(minimapOverlayLeftRect, paint);
         canvas.drawRect(minimapOverlayRightRect, paint);
+
+        // Draw minimap area size for debug
+        final int areaSizeHalf = state.minimapPreviewResizeAreaSize / 2;
+
+        paint.setColor(Color.RED);
+
+        // Left
+        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.top + 1, previewRect.left + areaSizeHalf, previewRect.top + 1, paint);
+        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.bottom - 1, previewRect.left + areaSizeHalf, previewRect.bottom - 1, paint);
+
+        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.top, previewRect.left - areaSizeHalf, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.left + areaSizeHalf, previewRect.top, previewRect.left + areaSizeHalf, previewRect.bottom, paint);
+
+        // Right
+        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.top + 1, previewRect.right + areaSizeHalf, previewRect.top + 1, paint);
+        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.bottom - 1, previewRect.right + areaSizeHalf, previewRect.bottom - 1, paint);
+
+        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.top, previewRect.right - areaSizeHalf, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.right + areaSizeHalf, previewRect.top, previewRect.right + areaSizeHalf, previewRect.bottom, paint);
     }
 
     private void drawPreview(Canvas canvas) {

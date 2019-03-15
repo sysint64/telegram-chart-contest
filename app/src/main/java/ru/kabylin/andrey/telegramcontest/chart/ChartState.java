@@ -7,18 +7,23 @@ import java.util.List;
 
 // TODO: Encapsulation
 class ChartState {
-    int minimapPreviewPosition = 100;
-    int minimapPreviewSize = 100;
+    int minimapPreviewLeft = 100;
+    int minimapPreviewRight = minimapPreviewLeft + 100;
+    int minimapPreviewResizeAreaSize = 40;
     Rect minimapRect = null;
 
     List<ChartData> charts = new ArrayList<>();
 
     Rect getMinimapPreviewRect() {
         return new Rect(
-                minimapPreviewPosition,
+                minimapPreviewLeft,
                 minimapRect.top,
-                minimapPreviewPosition + minimapPreviewSize,
+                minimapPreviewRight,
                 minimapRect.bottom
         );
+    }
+
+    int minimapPreviewSize() {
+        return minimapPreviewRight - minimapPreviewLeft;
     }
 }

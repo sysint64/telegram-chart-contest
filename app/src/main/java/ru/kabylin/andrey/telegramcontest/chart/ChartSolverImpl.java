@@ -278,9 +278,17 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculatePreviewPoints(Rect rect) {
-        float yMax = findMaxByYInCharts(chartState.charts);
+        final List<List<Vertex>> subCharts = new ArrayList<>();
 
         for (final ChartData chartData : chartState.charts) {
+            final List<Vertex> points = getMinimapPreviewPoints(chartData);
+            subCharts.add(points);
+        }
+
+        float yMax = findMaxByYInLists(subCharts);
+
+        for (final ChartData chartData : chartState.charts) {
+            // TODO: можно передать уже посчитанные точки методом `getMinimapPreviewPoints`
             calculatePreviewPoints(rect, yMax, chartData);
         }
     }
@@ -289,10 +297,10 @@ public class ChartSolverImpl implements ChartSolver {
         chartData.previewPoints.clear();
         final List<Vertex> points = getMinimapPreviewPoints(chartData);
 
-        final long x0 = chartState.minimapPreviewPosition;
+        final long x0 = chartState.minimapPreviewLeft;
         final long y0 = chartState.minimapRect.bottom;
 
-        final float xLast = chartState.minimapPreviewPosition + chartState.minimapPreviewSize;
+        final float xLast = chartState.minimapPreviewRight;
 
         for (final Vertex vertex : points) {
             chartData.previewPoints.add(projectVertex(vertex, rect, x0, y0, xLast, yMax));
@@ -317,7 +325,7 @@ public class ChartSolverImpl implements ChartSolver {
                     chartData.originalData.get(i).y
             );
 
-            if (point.x >= chartState.minimapPreviewPosition && point.x <= chartState.minimapPreviewPosition + chartState.minimapPreviewSize) {
+            if (point.x >= chartState.minimapPreviewLeft && point.x <= chartState.minimapPreviewRight) {
                 // Add point before left border
                 if (prevPoint != null && !firstPointSet) {
                     previewOriginalPoints.add(prevPoint);
@@ -353,6 +361,20 @@ public class ChartSolverImpl implements ChartSolver {
         return yMax;
     }
 
+    private float findMaxByYInLists(final List<List<Vertex>> charts) {
+        float yMax = 0;
+
+        for (final List<Vertex> chartData : charts) {
+            final float max = findMaxByY(chartData).y;
+
+            if (max > yMax) {
+                yMax = max;
+            }
+        }
+
+        return yMax;
+    }
+
     private Vertex findMaxByY(List<Vertex> points) {
         Vertex max = null;
 
@@ -371,12 +393,36 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     @Override
-    public void setMinimapPoisiton(float newPosition) {
+    public void setMinimapPosition(float newPosition) {
+        final int size = chartState.minimapPreviewSize();
+
         final Rect minimapRect = chartState.minimapRect;
-        chartState.minimapPreviewPosition = MathUtils.clamp(
+        chartState.minimapPreviewLeft = MathUtils.clamp(
                 (int) newPosition,
                 minimapRect.left,
-                minimapRect.right - chartState.minimapPreviewSize
+                minimapRect.right - size
+        );
+
+        setMinimapRight(chartState.minimapPreviewLeft + size);
+    }
+
+    @Override
+    public void setMinimapLeft(float newLeft) {
+        final Rect minimapRect = chartState.minimapRect;
+        chartState.minimapPreviewLeft = MathUtils.clamp(
+                (int) newLeft,
+                minimapRect.left,
+                chartState.minimapPreviewRight - chartState.minimapPreviewResizeAreaSize
+        );
+    }
+
+    @Override
+    public void setMinimapRight(float newRight) {
+        final Rect minimapRect = chartState.minimapRect;
+        chartState.minimapPreviewRight = MathUtils.clamp(
+                (int) newRight,
+                chartState.minimapPreviewLeft + chartState.minimapPreviewResizeAreaSize,
+                minimapRect.right
         );
     }
 }
