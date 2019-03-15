@@ -9,7 +9,7 @@ import java.util.List;
 class ChartState {
     int minimapPreviewLeft = 100;
     int minimapPreviewRight = minimapPreviewLeft + 100;
-    int minimapPreviewResizeAreaSize = 40;
+    int minimapPreviewResizeAreaSize = 20;
     Rect minimapRect = null;
 
     List<ChartData> charts = new ArrayList<>();

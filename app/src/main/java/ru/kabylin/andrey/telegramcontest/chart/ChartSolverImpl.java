@@ -412,7 +412,7 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.minimapPreviewLeft = MathUtils.clamp(
                 (int) newLeft,
                 minimapRect.left,
-                chartState.minimapPreviewRight - chartState.minimapPreviewResizeAreaSize
+                chartState.minimapPreviewRight - chartState.minimapPreviewResizeAreaSize * 2
         );
     }
 
@@ -421,7 +421,7 @@ public class ChartSolverImpl implements ChartSolver {
         final Rect minimapRect = chartState.minimapRect;
         chartState.minimapPreviewRight = MathUtils.clamp(
                 (int) newRight,
-                chartState.minimapPreviewLeft + chartState.minimapPreviewResizeAreaSize,
+                chartState.minimapPreviewLeft + chartState.minimapPreviewResizeAreaSize * 2,
                 minimapRect.right
         );
     }

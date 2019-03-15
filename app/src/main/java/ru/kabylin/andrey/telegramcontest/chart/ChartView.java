@@ -95,23 +95,21 @@ public final class ChartView extends View {
         canvas.drawRect(minimapOverlayRightRect, paint);
 
         // Draw minimap area size for debug
-        final int areaSizeHalf = state.minimapPreviewResizeAreaSize / 2;
-
         paint.setColor(Color.RED);
 
         // Left
-        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.top + 1, previewRect.left + areaSizeHalf, previewRect.top + 1, paint);
-        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.bottom - 1, previewRect.left + areaSizeHalf, previewRect.bottom - 1, paint);
+        canvas.drawLine(previewRect.left, previewRect.top + 1, previewRect.left + state.minimapPreviewResizeAreaSize, previewRect.top + 1, paint);
+        canvas.drawLine(previewRect.left, previewRect.bottom - 1, previewRect.left + state.minimapPreviewResizeAreaSize, previewRect.bottom - 1, paint);
 
-        canvas.drawLine(previewRect.left - areaSizeHalf, previewRect.top, previewRect.left - areaSizeHalf, previewRect.bottom, paint);
-        canvas.drawLine(previewRect.left + areaSizeHalf, previewRect.top, previewRect.left + areaSizeHalf, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.left, previewRect.top, previewRect.left, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.left + state.minimapPreviewResizeAreaSize, previewRect.top, previewRect.left + state.minimapPreviewResizeAreaSize, previewRect.bottom, paint);
 
         // Right
-        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.top + 1, previewRect.right + areaSizeHalf, previewRect.top + 1, paint);
-        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.bottom - 1, previewRect.right + areaSizeHalf, previewRect.bottom - 1, paint);
+        canvas.drawLine(previewRect.right - state.minimapPreviewResizeAreaSize, previewRect.top + 1, previewRect.right, previewRect.top + 1, paint);
+        canvas.drawLine(previewRect.right - state.minimapPreviewResizeAreaSize, previewRect.bottom - 1, previewRect.right, previewRect.bottom - 1, paint);
 
-        canvas.drawLine(previewRect.right - areaSizeHalf, previewRect.top, previewRect.right - areaSizeHalf, previewRect.bottom, paint);
-        canvas.drawLine(previewRect.right + areaSizeHalf, previewRect.top, previewRect.right + areaSizeHalf, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.right - state.minimapPreviewResizeAreaSize, previewRect.top, previewRect.right - state.minimapPreviewResizeAreaSize, previewRect.bottom, paint);
+        canvas.drawLine(previewRect.right, previewRect.top, previewRect.right, previewRect.bottom, paint);
     }
 
     private void drawPreview(Canvas canvas) {

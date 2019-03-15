@@ -60,9 +60,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
             return false;
         }
 
-        final int areaSizeHalf = chartState.minimapPreviewResizeAreaSize / 2;
-
-        if (touchX > previewRect.left - areaSizeHalf && touchX < previewRect.left + areaSizeHalf &&
+        if (touchX > previewRect.left && touchX < previewRect.left + chartState.minimapPreviewResizeAreaSize &&
                 touchY > previewRect.top && touchY < previewRect.bottom)
         {
             state = State.MINIMAP_RESIZE_LEFT;
@@ -70,7 +68,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
             onActionDownMinimapPreviewRight = chartState.minimapPreviewRight;
             return true;
         }
-        else if (touchX > previewRect.right - areaSizeHalf && touchX < previewRect.right + areaSizeHalf &&
+        else if (touchX > previewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < previewRect.right &&
                 touchY > previewRect.top && touchY < previewRect.bottom)
         {
             state = State.MINIMAP_RESIZE_RIGHT;
@@ -92,33 +90,23 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
 
     @SuppressWarnings("unused")
     private boolean onTouchMove(float touchX, float touchY) {
+        final float delta = touchX - onActionDownTouchX;
+
         switch (state) {
             case MINIMAP_MOVE:
-                return handleMinimapMove(touchX);
+                chartSolver.setMinimapPosition(onActionDownMinimapPreviewLeft + delta);
+                return true;
 
             case MINIMAP_RESIZE_LEFT:
-                return handleMinimapResizeLeft(touchX);
+                chartSolver.setMinimapLeft(onActionDownMinimapPreviewLeft + delta);
+                return true;
 
             case MINIMAP_RESIZE_RIGHT:
-                return handleMinimapResizeRight(touchX);
+                chartSolver.setMinimapRight(onActionDownMinimapPreviewRight + delta);
+                return true;
 
             default:
                 return false;
         }
-    }
-
-    private boolean handleMinimapMove(float touchX) {
-        chartSolver.setMinimapPosition(onActionDownMinimapPreviewLeft + touchX - onActionDownTouchX);
-        return true;
-    }
-
-    private boolean handleMinimapResizeLeft(float touchX) {
-        chartSolver.setMinimapLeft(onActionDownMinimapPreviewLeft + touchX - onActionDownTouchX);
-        return true;
-    }
-
-    private boolean handleMinimapResizeRight(float touchX) {
-        chartSolver.setMinimapRight(onActionDownMinimapPreviewRight + touchX - onActionDownTouchX);
-        return true;
     }
 }
