@@ -14,4 +14,6 @@ public interface ChartSolver {
     void setMinimapLeft(final float newLeft);
 
     void setMinimapRight(final float newRight);
+
+    void onProgress();
 }

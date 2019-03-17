@@ -50,6 +50,7 @@ public final class ChartView extends View {
 
         drawPreview(canvas);
 
+        chartSolver.onProgress();
         invalidate();
     }
 
@@ -60,6 +61,7 @@ public final class ChartView extends View {
                 /* right */ getWidth(),
                 /* bottom */ getHeight()
         );
+
 
         chartSolver.calculateMinimapPoints(minimapRect);
         final ChartState state = chartSolver.getState();

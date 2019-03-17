@@ -1,13 +1,15 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Rect;
-import android.support.v4.math.MathUtils;
+import android.util.Log;
+import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChartSolverImpl implements ChartSolver {
     private final ChartState chartState;
+    private long lastTime = System.nanoTime();
 
     ChartSolverImpl() {
         final List<Vertex> chart0Points = new ArrayList<>();
@@ -285,11 +287,16 @@ public class ChartSolverImpl implements ChartSolver {
             subCharts.add(points);
         }
 
-        float yMax = findMaxByYInLists(subCharts);
+        chartState.statePreviewMaxY = findMaxByYInLists(subCharts);
+
+        if (!chartState.isInitPreviewMaxY) {
+            chartState.previewMaxY = chartState.statePreviewMaxY;
+            chartState.isInitPreviewMaxY = true;
+        }
 
         for (final ChartData chartData : chartState.charts) {
             // TODO: можно передать уже посчитанные точки методом `getMinimapPreviewPoints`
-            calculatePreviewPoints(rect, yMax, chartData);
+            calculatePreviewPoints(rect, chartState.previewMaxY, chartData);
         }
     }
 
@@ -333,13 +340,11 @@ public class ChartSolverImpl implements ChartSolver {
 
                 previewOriginalPoints.add(point);
                 firstPointSet = true;
-            }
-            else if (firstPointSet) {
+            } else if (firstPointSet) {
                 // Add point after right border
                 previewOriginalPoints.add(point);
                 break;
-            }
-            else {
+            } else {
                 prevPoint = point;
             }
         }
@@ -424,5 +429,20 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.minimapPreviewLeft + chartState.minimapPreviewResizeAreaSize * 2,
                 minimapRect.right
         );
+    }
+
+    @Override
+    public void onProgress() {
+        final long time = System.nanoTime();
+        final float deltaTime = (time - lastTime) / 1000000f / 10000f;
+
+        chartState.previewMaxY = MathUtils.interpTo(
+                chartState.previewMaxY,
+                chartState.statePreviewMaxY,
+                deltaTime,
+                chartState.previewMaxYChangeSpeed
+        );
+
+        lastTime = time;
     }
 }
