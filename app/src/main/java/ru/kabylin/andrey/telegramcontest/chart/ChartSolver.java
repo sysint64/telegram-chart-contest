@@ -16,4 +16,6 @@ public interface ChartSolver {
     void setMinimapRight(final float newRight);
 
     void onProgress();
+
+    boolean setChartVisibilityByName(final String name, final boolean visibility);
 }

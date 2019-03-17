@@ -9,6 +9,9 @@ public class ChartData {
     final List<Vertex> originalData = new ArrayList<>();
     final List<Vertex> minimapPoints = new ArrayList<>();
     final List<Vertex> previewPoints = new ArrayList<>();
+    float stateOpacity = 1f;
+    float opacity = 1f;
+    boolean isVisible = true;
 
     public ChartData(String name, String color) {
         this.name = name;

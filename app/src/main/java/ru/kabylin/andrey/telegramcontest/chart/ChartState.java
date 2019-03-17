@@ -15,7 +15,8 @@ class ChartState {
     boolean isInitPreviewMaxY = false;
     float statePreviewMaxY = 0f;
     float previewMaxY = 0f;
-    float previewMaxYChangeSpeed = 100f;
+    float previewMaxYChangeSpeed = 150f;
+    float opacityChangeSpeed = 150f;
 
     List<ChartData> charts = new ArrayList<>();
 

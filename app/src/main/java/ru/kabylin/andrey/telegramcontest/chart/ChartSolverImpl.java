@@ -283,8 +283,10 @@ public class ChartSolverImpl implements ChartSolver {
         final List<List<Vertex>> subCharts = new ArrayList<>();
 
         for (final ChartData chartData : chartState.charts) {
-            final List<Vertex> points = getMinimapPreviewPoints(chartData);
-            subCharts.add(points);
+            if (chartData.isVisible) {
+                final List<Vertex> points = getMinimapPreviewPoints(chartData);
+                subCharts.add(points);
+            }
         }
 
         chartState.statePreviewMaxY = findMaxByYInLists(subCharts);
@@ -356,10 +358,12 @@ public class ChartSolverImpl implements ChartSolver {
         float yMax = 0;
 
         for (final ChartData chartData : charts) {
-            final float max = findMaxByY(chartData.originalData).y;
+            if (chartData.isVisible) {
+                final float max = findMaxByY(chartData.originalData).y;
 
-            if (max > yMax) {
-                yMax = max;
+                if (max > yMax) {
+                    yMax = max;
+                }
             }
         }
 
@@ -443,6 +447,28 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.previewMaxYChangeSpeed
         );
 
+        for (final ChartData chart : chartState.charts) {
+            chart.opacity = MathUtils.interpTo(
+                    chart.opacity,
+                    chart.stateOpacity,
+                    deltaTime,
+                    chartState.opacityChangeSpeed
+            );
+        }
+
         lastTime = time;
+    }
+
+    @Override
+    public boolean setChartVisibilityByName(String name, boolean visibility) {
+        for (final ChartData chart : chartState.charts) {
+            if (chart.name.equals(name)) {
+                chart.isVisible = visibility;
+                chart.stateOpacity = chart.isVisible ? 1f : 0f;
+                return true;
+            }
+        }
+
+        return false;
     }
 }

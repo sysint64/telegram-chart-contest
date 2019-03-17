@@ -62,7 +62,6 @@ public final class ChartView extends View {
                 /* bottom */ getHeight()
         );
 
-
         chartSolver.calculateMinimapPoints(minimapRect);
         final ChartState state = chartSolver.getState();
 
@@ -70,6 +69,7 @@ public final class ChartView extends View {
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));
+            paint.setAlpha((int) (chart.opacity * 255f));
             drawPath(canvas, chart.minimapPoints);
         }
     }
@@ -125,10 +125,11 @@ public final class ChartView extends View {
         chartSolver.calculatePreviewPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
-        paint.setStrokeWidth(2);
+        paint.setStrokeWidth(3);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));
+            paint.setAlpha((int) (chart.opacity * 255f));
             drawPath(canvas, chart.previewPoints);
         }
     }
@@ -149,5 +150,9 @@ public final class ChartView extends View {
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
         return userInteractor.onTouchEvent(event);
+    }
+
+    public boolean setChartVisibilityByName(final String name, final boolean visibility) {
+        return chartSolver.setChartVisibilityByName(name, visibility);
     }
 }
