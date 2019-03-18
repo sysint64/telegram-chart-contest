@@ -1,6 +1,7 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Rect;
+import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,16 @@ class ChartState {
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
     float minimapMaxYChangeSpeed = 150f;
+    float axisOpacityChangeSpeed = 100f;
+    float axisXDistance = MeasureUtils.convertDpToPixel(60);
 
     List<ChartData> charts = new ArrayList<>();
+
+    final List<AxisVertex> xAxis = new ArrayList<>();
+    final List<AxisVertex> yAxis = new ArrayList<>();
+
+    final List<AxisVertex> previewAxisX = new ArrayList<>();
+    final List<AxisVertex> previewAxisY = new ArrayList<>();
 
     Rect getMinimapPreviewRect() {
         return new Rect(

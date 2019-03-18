@@ -49,6 +49,7 @@ public final class ChartView extends View {
         drawMinimapPreview(canvas);
 
         drawPreview(canvas);
+        drawAxisX(canvas);
 
         chartSolver.onProgress();
         invalidate();
@@ -143,6 +144,25 @@ public final class ChartView extends View {
             }
 
             prevVertex = vertex;
+        }
+    }
+
+    private void drawAxisX(Canvas canvas) {
+        chartSolver.calculateAxisXPoints(previewRect);
+        final ChartState state = chartSolver.getState();
+
+        paint.setColor(Color.BLACK);
+        paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
+
+        for (final AxisVertex vertex : state.previewAxisX) {
+            final int opacity = (int) (vertex.opacity * 255f);
+
+            if (opacity > 0) {
+//                paint.setTextAlign(vertex.textAlign);
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setAlpha(opacity);
+                canvas.drawText(vertex.title, vertex.x, vertex.y, paint);
+            }
         }
     }
 

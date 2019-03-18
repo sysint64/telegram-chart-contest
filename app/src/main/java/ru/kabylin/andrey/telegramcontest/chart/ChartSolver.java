@@ -18,4 +18,8 @@ public interface ChartSolver {
     void onProgress();
 
     boolean setChartVisibilityByName(final String name, final boolean visibility);
+
+    void calculateAxisXPoints(final Rect rect);
+
+    void calculateAxisYPoints(final Rect rect);
 }

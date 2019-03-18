@@ -9,6 +9,7 @@ class ChartData {
     final List<Vertex> originalData = new ArrayList<>();
     final List<Vertex> minimapPoints = new ArrayList<>();
     final List<Vertex> previewPoints = new ArrayList<>();
+
     float stateOpacity = 1f;
     float opacity = 1f;
     boolean isVisible = true;
@@ -21,3 +22,5 @@ class ChartData {
         this.color = color;
     }
 }
+
+// 0, 18, 36, 54, 72, 90

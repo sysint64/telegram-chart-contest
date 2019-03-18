@@ -1,10 +1,14 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
+import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
+import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ChartSolverImpl implements ChartSolver {
@@ -251,6 +255,44 @@ public class ChartSolverImpl implements ChartSolver {
 
         chartState.charts.add(chart0);
         chartState.charts.add(chart1);
+
+        fillAxisPoints(chart0);
+//        fillAxisPoints(chart1);
+    }
+
+    private void fillAxisPoints(ChartData chartData) {
+        final long x0 = chartData.originalData.get(0).x;
+        final float xLast = chartData.originalData.get(chartData.originalData.size() - 1).x;
+
+        final int count = chartData.originalData.size();
+        final int delta = (int) Math.ceil((xLast - x0) / count);
+        long x = x0;
+
+//        for (int i = 0; i < count; ++i) {
+//            chartState.xAxis.add(
+//                    new AxisVertex(
+//                            x,
+//                            0,
+//                            DateUtils.humanizeDate(new Date(x)).split(",")[0],
+//                            null
+//                    )
+//            );
+//
+//            x += delta;
+//        }
+
+        for (final Vertex point : chartData.originalData) {
+            chartState.xAxis.add(
+                    new AxisVertex(
+                            point.x,
+                            0,
+                            DateUtils.humanizeDate(new Date(point.x)).split(",")[0],
+                            null)
+            );
+        }
+
+        chartState.xAxis.get(0).textAlign = Paint.Align.LEFT;
+        chartState.xAxis.get(chartState.xAxis.size() - 1).textAlign = Paint.Align.RIGHT;
     }
 
     @Override
@@ -317,10 +359,18 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     private Vertex projectVertex(Vertex vertex, Rect rect, float x0, float y0, float xMax, float yMax) {
-        float x = rect.left + (vertex.x - x0) / (xMax - x0) * (rect.right - rect.left);
-        float y = rect.bottom - (vertex.y / yMax) * (rect.bottom - rect.top);
+        return new Vertex(
+                projectX(vertex.x, rect, x0, xMax),
+                projectY(vertex.y, rect, y0, yMax)
+        );
+    }
 
-        return new Vertex(x, y);
+    private float projectX(float x, Rect rect, float x0, float xMax) {
+        return rect.left + (x - x0) / (xMax - x0) * (rect.right - rect.left);
+    }
+
+    private float projectY(float y, Rect rect, float y0, float yMax) {
+        return rect.bottom - (y / yMax) * (rect.bottom - rect.top);
     }
 
     private List<Vertex> getMinimapPreviewPoints(final ChartData chartData) {
@@ -472,6 +522,24 @@ public class ChartSolverImpl implements ChartSolver {
             );
         }
 
+        for (final AxisVertex vertex : chartState.xAxis) {
+            vertex.opacity = MathUtils.interpTo(
+                    vertex.opacity,
+                    vertex.stateOpacity,
+                    deltaTime,
+                    chartState.axisOpacityChangeSpeed
+            );
+        }
+
+        for (final AxisVertex vertex : chartState.yAxis) {
+            vertex.opacity = MathUtils.interpTo(
+                    vertex.opacity,
+                    vertex.stateOpacity,
+                    deltaTime,
+                    chartState.axisOpacityChangeSpeed
+            );
+        }
+
         lastTime = time;
     }
 
@@ -486,5 +554,76 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         return false;
+    }
+
+    @Override
+    public void calculateAxisXPoints(Rect rect) {
+        chartState.previewAxisX.clear();
+        final List<AxisVertex> vertices = getPreviewAxisVertices();
+
+        if (vertices.isEmpty()) {
+            return;
+        }
+
+        final long x0 = chartState.minimapPreviewLeft;
+        final float xMax = chartState.minimapPreviewRight;
+
+        float lastX = -1;
+        boolean setLastX = false;
+
+        for (final AxisVertex vertex : vertices) {
+            final float x = projectX(vertex.x, rect, x0, xMax);
+            final float stateOpacity = 1f;
+
+//            if (!setLastX || x - lastX >= chartState.axisXDistance) {
+//                lastX = x + chartState.axisXDistance;
+//                stateOpacity = 1f;
+//                setLastX = true;
+//            } else {
+//                stateOpacity = 0f;
+//            }
+
+            if (vertex.x >= chartState.minimapPreviewLeft && vertex.x <= chartState.minimapPreviewRight) {
+                vertex.original.stateOpacity = stateOpacity;
+
+                chartState.previewAxisX.add(
+                        new AxisVertex(
+                                (int) x,
+                                (int) (rect.bottom - MeasureUtils.convertDpToPixel(10)),
+                                vertex.title,
+                                stateOpacity,
+                                vertex.opacity,
+                                vertex.original
+                        )
+                );
+            }
+        }
+    }
+
+    private List<AxisVertex> getPreviewAxisVertices() {
+        final List<AxisVertex> vertices = new ArrayList<>();
+
+        final long x0 = chartState.xAxis.get(0).x;
+        final float xMax = chartState.xAxis.get(chartState.xAxis.size() - 1).x;
+
+        for (final AxisVertex vertex : chartState.xAxis) {
+            final float minimapX = projectX(vertex.x, chartState.minimapRect, x0, xMax);
+
+            vertices.add(
+                    new AxisVertex(
+                            (long) minimapX,
+                            vertex.y,
+                            vertex.title,
+                            vertex.stateOpacity,
+                            vertex.opacity,
+                            vertex)
+            );
+        }
+
+        return vertices;
+    }
+
+    @Override
+    public void calculateAxisYPoints(Rect rect) {
     }
 }
