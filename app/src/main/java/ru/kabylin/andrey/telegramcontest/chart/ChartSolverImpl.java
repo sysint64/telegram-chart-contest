@@ -256,10 +256,10 @@ public class ChartSolverImpl implements ChartSolver {
     @Override
     public void calculateMinimapPoints(final Rect rect) {
         chartState.minimapRect = rect;
-        float yMax = findMaxByYInCharts(chartState.charts);
+        findMaxByYInCharts(chartState.charts);
 
         for (final ChartData chartData : chartState.charts) {
-            calculateChartMinimapPoints(rect, yMax, chartData);
+            calculateChartMinimapPoints(rect, chartData.minimapMaxY, chartData);
         }
     }
 
@@ -354,7 +354,7 @@ public class ChartSolverImpl implements ChartSolver {
         return previewOriginalPoints;
     }
 
-    private float findMaxByYInCharts(final List<ChartData> charts) {
+    private void findMaxByYInCharts(final List<ChartData> charts) {
         float yMax = 0;
 
         for (final ChartData chartData : charts) {
@@ -367,7 +367,16 @@ public class ChartSolverImpl implements ChartSolver {
             }
         }
 
-        return yMax;
+        for (final ChartData chartData : charts) {
+            if (chartData.isVisible) {
+                chartData.stateMinimapMaxY = yMax;
+
+                if (!chartData.isMinimapMaxYInit) {
+                    chartData.minimapMaxY = yMax;
+                    chartData.isMinimapMaxYInit = true;
+                }
+            }
+        }
     }
 
     private float findMaxByYInLists(final List<List<Vertex>> charts) {
@@ -453,6 +462,13 @@ public class ChartSolverImpl implements ChartSolver {
                     chart.stateOpacity,
                     deltaTime,
                     chartState.opacityChangeSpeed
+            );
+
+            chart.minimapMaxY = MathUtils.interpTo(
+                    chart.minimapMaxY,
+                    chart.stateMinimapMaxY,
+                    deltaTime,
+                    chartState.minimapMaxYChangeSpeed
             );
         }
 

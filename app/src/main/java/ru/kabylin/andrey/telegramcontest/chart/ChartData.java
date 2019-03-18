@@ -3,7 +3,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartData {
+class ChartData {
     final String name;
     final String color;
     final List<Vertex> originalData = new ArrayList<>();
@@ -12,11 +12,12 @@ public class ChartData {
     float stateOpacity = 1f;
     float opacity = 1f;
     boolean isVisible = true;
+    float stateMinimapMaxY = 0f;
+    float minimapMaxY = 0f;
+    boolean isMinimapMaxYInit = false;
 
-    public ChartData(String name, String color) {
+    ChartData(String name, String color) {
         this.name = name;
         this.color = color;
     }
-
-
 }
