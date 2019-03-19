@@ -19,12 +19,23 @@ class ChartState {
     float opacityChangeSpeed = 150f;
     float minimapMaxYChangeSpeed = 150f;
     float axisOpacityChangeSpeed = 50f;
+    float axisYOffsetChangeSpeed = 50f;
     float axisXDistance = MeasureUtils.convertDpToPixel(240);
+    float axisXOffsetY = MeasureUtils.convertDpToPixel(20);
+    float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
+    float axisYTextOffsetY = MeasureUtils.convertDpToPixel(5);
+    float axisYTopPadding = MeasureUtils.convertDpToPixel(40);
 
     List<ChartData> charts = new ArrayList<>();
 
     final List<AxisVertex> xAxis = new ArrayList<>();
+
     final List<AxisVertex> yAxis = new ArrayList<>();
+    final List<AxisVertex> yAxisCurrent = new ArrayList<>();
+    final List<AxisVertex> yAxisPast = new ArrayList<>();
+
+    // For Y axis animations
+    float lastStatePreviewMaxY = 0f;
 
     final List<AxisVertex> previewAxisX = new ArrayList<>();
     final List<AxisVertex> previewAxisY = new ArrayList<>();

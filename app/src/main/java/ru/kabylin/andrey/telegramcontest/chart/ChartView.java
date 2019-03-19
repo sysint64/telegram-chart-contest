@@ -48,8 +48,10 @@ public final class ChartView extends View {
         drawMinimap(canvas);
         drawMinimapPreview(canvas);
 
+        drawAxisYGrid(canvas);
         drawPreview(canvas);
         drawAxisX(canvas);
+        drawAxisYLabels(canvas);
 
         chartSolver.onProgress();
         invalidate();
@@ -120,7 +122,7 @@ public final class ChartView extends View {
                 /* left */ 0,
                 /* top*/ 0,
                 /* right */ getWidth(),
-                /* bottom */ getHeight() - (int) MeasureUtils.convertDpToPixel(50)
+                /* bottom */ getHeight() - (int) MeasureUtils.convertDpToPixel(90)
         );
 
         chartSolver.calculatePreviewPoints(previewRect);
@@ -161,6 +163,43 @@ public final class ChartView extends View {
                 paint.setTextAlign(vertex.original.textAlign);
                 paint.setAlpha(opacity);
                 canvas.drawText(vertex.title, vertex.x, vertex.y, paint);
+            }
+        }
+    }
+
+    private void drawAxisYLabels(Canvas canvas) {
+//        chartSolver.calculateAxisYPoints(previewRect);
+        final ChartState state = chartSolver.getState();
+
+        paint.setColor(Color.BLACK);
+        paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
+
+        for (final AxisVertex vertex : state.previewAxisY) {
+            final int opacity = (int) (vertex.opacity * 255f);
+            final float y = vertex.y - state.axisYTextOffsetY + vertex.yOffset;
+
+            if (opacity > 0 && y <= previewRect.bottom) {
+                paint.setTextAlign(Paint.Align.LEFT);
+                paint.setAlpha(opacity);
+
+                canvas.drawText(vertex.title, vertex.x, y, paint);
+            }
+        }
+    }
+
+    private void drawAxisYGrid(Canvas canvas) {
+        chartSolver.calculateAxisYPoints(previewRect);
+        final ChartState state = chartSolver.getState();
+
+        paint.setColor(Color.parseColor("#cccccc"));
+
+        for (final AxisVertex vertex : state.previewAxisY) {
+            final int opacity = (int) (vertex.opacity * 255f);
+            final float y = vertex.y + vertex.yOffset;
+
+            if (opacity > 0 && y <= previewRect.bottom) {
+                paint.setAlpha(opacity);
+                canvas.drawLine(previewRect.left, y, previewRect.right, y, paint);
             }
         }
     }

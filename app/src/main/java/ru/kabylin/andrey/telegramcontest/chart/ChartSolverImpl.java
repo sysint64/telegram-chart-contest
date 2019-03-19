@@ -537,6 +537,13 @@ public class ChartSolverImpl implements ChartSolver {
                     deltaTime,
                     chartState.axisOpacityChangeSpeed
             );
+
+            vertex.yOffset = MathUtils.interpTo(
+                    vertex.yOffset,
+                    vertex.stateYOffset,
+                    deltaTime,
+                    chartState.axisYOffsetChangeSpeed
+            );
         }
 
         lastTime = time;
@@ -615,7 +622,7 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.previewAxisX.add(
                 new AxisVertex(
                         (int) projectValueAxisXVertex(rect, vertex),
-                        (int) (rect.bottom - MeasureUtils.convertDpToPixel(10)),
+                        (int) (rect.bottom + chartState.axisXOffsetY),
                         vertex.title,
                         stateOpacity,
                         vertex.opacity,
@@ -651,7 +658,8 @@ public class ChartSolverImpl implements ChartSolver {
                             vertex.title,
                             vertex.stateOpacity,
                             vertex.opacity,
-                            vertex)
+                            vertex
+                    )
             );
         }
 
@@ -660,5 +668,95 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculateAxisYPoints(Rect rect) {
+        if (chartState.yAxisCurrent.isEmpty()) {
+            for (int i = 0; i < 5; ++i) {
+                chartState.yAxisCurrent.add(
+                        new AxisVertex(
+                                0,
+                                0,
+                                "-",
+                                0f,
+                                0f,
+                                null,
+                                0f,
+                                0f
+                        )
+                );
+
+                chartState.yAxisPast.add(
+                        new AxisVertex(
+                                0,
+                                0,
+                                "-",
+                                0f,
+                                0f,
+                                null,
+                                0f,
+                                0f
+                        )
+                );
+            }
+
+            chartState.yAxis.clear();
+            chartState.yAxis.addAll(chartState.yAxisCurrent);
+            chartState.yAxis.addAll(chartState.yAxisPast);
+        }
+
+        if (Math.floor(chartState.lastStatePreviewMaxY) != Math.floor(chartState.statePreviewMaxY)) {
+            final float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((chartState.lastStatePreviewMaxY - chartState.statePreviewMaxY) / Math.max(chartState.lastStatePreviewMaxY, chartState.statePreviewMaxY));
+
+            for (int i = 0; i < chartState.yAxisPast.size(); ++i) {
+                AxisVertex vertex = chartState.yAxisPast.get(i);
+                AxisVertex current = chartState.yAxisCurrent.get(i);
+
+                vertex.x = current.x;
+                vertex.y = current.y;
+                vertex.title = current.title;
+
+                if (vertex.opacity < 0.01f) {
+                    vertex.yOffset = 0f;
+                    vertex.stateYOffset = -deltaMaxY;
+                } else {
+                    vertex.stateYOffset -= deltaMaxY;
+                }
+
+                vertex.stateOpacity = 0f;
+                vertex.opacity = 1f;
+            }
+
+            final long delta = (int) ((rect.bottom - rect.top - chartState.axisYTopPadding) / 5f);
+            final long deltaValue = (long) (chartState.statePreviewMaxY / 5f);
+
+            long current = rect.bottom;
+            long currentValue = 0;
+
+            for (AxisVertex vertex : chartState.yAxisCurrent) {
+                current -= delta;
+                currentValue += deltaValue;
+
+                vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
+                vertex.y = current;
+                vertex.opacity = 0f;
+                vertex.stateOpacity = 1f;
+                vertex.title = String.valueOf(currentValue);
+            }
+        }
+
+        chartState.lastStatePreviewMaxY = chartState.statePreviewMaxY;
+
+        chartState.previewAxisY.clear();
+        chartState.previewAxisY.add(
+                new AxisVertex(
+                        (int) (rect.left + chartState.axisYTextOffsetX),
+                        rect.bottom,
+                        "0",
+                        1f,
+                        1f,
+                        null
+                )
+        );
+
+        chartState.previewAxisY.addAll(chartState.yAxisCurrent);
+        chartState.previewAxisY.addAll(chartState.yAxisPast);
     }
 }
