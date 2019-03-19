@@ -2,7 +2,6 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
@@ -264,32 +263,32 @@ public class ChartSolverImpl implements ChartSolver {
         final long x0 = chartData.originalData.get(0).x;
         final float xLast = chartData.originalData.get(chartData.originalData.size() - 1).x;
 
-        final int count = chartData.originalData.size();
+//        final int count = chartData.originalData.size();
+        final int count = 256;
         final int delta = (int) Math.ceil((xLast - x0) / count);
         long x = x0;
 
-//        for (int i = 0; i < count; ++i) {
-//            chartState.xAxis.add(
-//                    new AxisVertex(
-//                            x,
-//                            0,
-//                            DateUtils.humanizeDate(new Date(x)).split(",")[0],
-//                            null
-//                    )
-//            );
-//
-//            x += delta;
-//        }
-
-        for (final Vertex point : chartData.originalData) {
+        for (int i = 0; i < count; ++i) {
             chartState.xAxis.add(
                     new AxisVertex(
-                            point.x,
+                            x,
                             0,
-                            DateUtils.humanizeDate(new Date(point.x)).split(",")[0],
-                            null)
+                            DateUtils.humanizeDate(new Date(x)).split(",")[0]
+                    )
             );
+
+            x += delta;
         }
+
+//        for (final Vertex point : chartData.originalData) {
+//            chartState.xAxis.add(
+//                    new AxisVertex(
+//                            point.x,
+//                            0,
+//                            DateUtils.humanizeDate(new Date(point.x)).fallThroughAxisX(",")[0],
+//                            null)
+//            );
+//        }
 
         chartState.xAxis.get(0).textAlign = Paint.Align.LEFT;
         chartState.xAxis.get(chartState.xAxis.size() - 1).textAlign = Paint.Align.RIGHT;
@@ -565,39 +564,75 @@ public class ChartSolverImpl implements ChartSolver {
             return;
         }
 
+        for (AxisVertex vertex : chartState.xAxis) {
+            vertex.stateOpacity = 0f;
+        }
+
+        projectAxisXVertex(rect, vertices, 0, 1f);
+        projectAxisXVertex(rect, vertices, vertices.size() - 1, 1f);
+
+        fallThroughAxisX(rect, vertices, 0, vertices.size() - 1);
+    }
+
+    private void fallThroughAxisX(Rect rect, List<AxisVertex> vertices, int left, int right) {
+        fallThroughAxisX(rect, vertices, left, right, false);
+    }
+
+    private void fallThroughAxisX(Rect rect, List<AxisVertex> vertices, int left, int right, boolean finishState) {
+        if (right - left == 0) {
+            return;
+        }
+
+        final float leftProjection = projectValueAxisXVertex(rect, vertices, left);
+        final float rightProjection = projectValueAxisXVertex(rect, vertices, right);
+
+        final int midl = left + (int) Math.floor((right - left) / 2f);
+        final int midr = left + (int) Math.ceil((right - left) / 2f);
+
+        if (finishState) {
+            projectAxisXVertex(rect, vertices, midl, 0f);
+            return;
+        } else {
+            projectAxisXVertex(rect, vertices, midl, 1f);
+        }
+
+        if (rightProjection - leftProjection > chartState.axisXDistance) {
+            fallThroughAxisX(rect, vertices, left, midr);
+            fallThroughAxisX(rect, vertices, midl, right);
+        } else {
+            fallThroughAxisX(rect, vertices, left, midr, true);
+            fallThroughAxisX(rect, vertices, midl, right, true);
+        }
+    }
+
+    private void projectAxisXVertex(Rect rect, List<AxisVertex> vertices, int index, float stateOpacity) {
+        final AxisVertex vertex = vertices.get(index);
+        projectAxisXVertex(rect, vertex, stateOpacity);
+    }
+
+    private void projectAxisXVertex(Rect rect, AxisVertex vertex, float stateOpacity) {
+        vertex.original.stateOpacity = stateOpacity;
+        chartState.previewAxisX.add(
+                new AxisVertex(
+                        (int) projectValueAxisXVertex(rect, vertex),
+                        (int) (rect.bottom - MeasureUtils.convertDpToPixel(10)),
+                        vertex.title,
+                        stateOpacity,
+                        vertex.opacity,
+                        vertex.original
+                )
+        );
+    }
+
+    private float projectValueAxisXVertex(Rect rect, List<AxisVertex> vertices, int index) {
+        final AxisVertex vertex = vertices.get(index);
+        return projectValueAxisXVertex(rect, vertex);
+    }
+
+    private float projectValueAxisXVertex(Rect rect, AxisVertex vertex) {
         final long x0 = chartState.minimapPreviewLeft;
         final float xMax = chartState.minimapPreviewRight;
-
-        float lastX = -1;
-        boolean setLastX = false;
-
-        for (final AxisVertex vertex : vertices) {
-            final float x = projectX(vertex.x, rect, x0, xMax);
-            final float stateOpacity = 1f;
-
-//            if (!setLastX || x - lastX >= chartState.axisXDistance) {
-//                lastX = x + chartState.axisXDistance;
-//                stateOpacity = 1f;
-//                setLastX = true;
-//            } else {
-//                stateOpacity = 0f;
-//            }
-
-            if (vertex.x >= chartState.minimapPreviewLeft && vertex.x <= chartState.minimapPreviewRight) {
-                vertex.original.stateOpacity = stateOpacity;
-
-                chartState.previewAxisX.add(
-                        new AxisVertex(
-                                (int) x,
-                                (int) (rect.bottom - MeasureUtils.convertDpToPixel(10)),
-                                vertex.title,
-                                stateOpacity,
-                                vertex.opacity,
-                                vertex.original
-                        )
-                );
-            }
-        }
+        return projectX(vertex.x, rect, x0, xMax);
     }
 
     private List<AxisVertex> getPreviewAxisVertices() {

@@ -18,8 +18,8 @@ class ChartState {
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
     float minimapMaxYChangeSpeed = 150f;
-    float axisOpacityChangeSpeed = 100f;
-    float axisXDistance = MeasureUtils.convertDpToPixel(60);
+    float axisOpacityChangeSpeed = 50f;
+    float axisXDistance = MeasureUtils.convertDpToPixel(240);
 
     List<ChartData> charts = new ArrayList<>();
 
