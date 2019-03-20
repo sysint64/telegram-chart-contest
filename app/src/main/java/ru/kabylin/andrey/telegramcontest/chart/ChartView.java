@@ -2,10 +2,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.*;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -52,6 +49,7 @@ public final class ChartView extends View {
         drawPreview(canvas);
         drawAxisX(canvas);
         drawAxisYLabels(canvas);
+        drawPopup(canvas);
 
         chartSolver.onProgress();
         invalidate();
@@ -168,7 +166,6 @@ public final class ChartView extends View {
     }
 
     private void drawAxisYLabels(Canvas canvas) {
-//        chartSolver.calculateAxisYPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
         paint.setColor(Color.BLACK);
@@ -191,6 +188,7 @@ public final class ChartView extends View {
         chartSolver.calculateAxisYPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
+        paint.setStrokeWidth(MeasureUtils.convertDpToPixel(1));
         paint.setColor(Color.parseColor("#cccccc"));
 
         for (final AxisVertex vertex : state.previewAxisY) {
@@ -202,6 +200,17 @@ public final class ChartView extends View {
                 canvas.drawLine(previewRect.left, y, previewRect.right, y, paint);
             }
         }
+    }
+
+    private void drawPopup(Canvas canvas) {
+        final ChartState state = chartSolver.getState();
+
+        paint.setStrokeWidth(MeasureUtils.convertDpToPixel(1));
+        paint.setColor(Color.parseColor("#cccccc"));
+
+        canvas.drawLine(state.popup.left, previewRect.top, state.popup.left, previewRect.bottom, paint);
+
+        state.popup.draw(canvas);
     }
 
     @Override

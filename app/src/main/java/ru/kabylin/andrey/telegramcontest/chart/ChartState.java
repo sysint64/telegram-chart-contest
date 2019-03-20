@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: Encapsulation
-class ChartState {
+final class ChartState {
     int minimapPreviewLeft = 100;
     int minimapPreviewRight = minimapPreviewLeft + 100;
     int minimapPreviewResizeAreaSize = 20;
@@ -40,6 +40,8 @@ class ChartState {
 
     final List<AxisVertex> previewAxisX = new ArrayList<>();
     final List<AxisVertex> previewAxisY = new ArrayList<>();
+
+    final Popup popup = new Popup();
 
     Rect getMinimapPreviewRect() {
         return new Rect(

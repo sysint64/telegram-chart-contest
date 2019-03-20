@@ -4,7 +4,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
-import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -670,31 +669,8 @@ public class ChartSolverImpl implements ChartSolver {
     public void calculateAxisYPoints(Rect rect) {
         if (chartState.yAxisCurrent.isEmpty()) {
             for (int i = 0; i < 5; ++i) {
-                chartState.yAxisCurrent.add(
-                        new AxisVertex(
-                                0,
-                                0,
-                                "-",
-                                0f,
-                                0f,
-                                null,
-                                0f,
-                                0f
-                        )
-                );
-
-                chartState.yAxisPast.add(
-                        new AxisVertex(
-                                0,
-                                0,
-                                "-",
-                                0f,
-                                0f,
-                                null,
-                                0f,
-                                0f
-                        )
-                );
+                chartState.yAxisCurrent.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
+                chartState.yAxisPast.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
             }
 
             chartState.yAxis.clear();
@@ -725,7 +701,7 @@ public class ChartSolverImpl implements ChartSolver {
             }
 
             final long delta = (int) ((rect.bottom - rect.top - chartState.axisYTopPadding) / 5f);
-            final long deltaValue = (long) (chartState.statePreviewMaxY / 5f);
+            final long deltaValue = (long) (chartState.statePreviewMaxY / 6f);
 
             long current = rect.bottom;
             long currentValue = 0;
