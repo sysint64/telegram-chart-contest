@@ -526,7 +526,7 @@ public class ChartSolverImpl implements ChartSolver {
                     vertex.opacity,
                     vertex.stateOpacity,
                     deltaTime,
-                    chartState.axisOpacityChangeSpeed
+                    chartState.axisXOpacityChangeSpeed
             );
         }
 
@@ -535,7 +535,7 @@ public class ChartSolverImpl implements ChartSolver {
                     vertex.opacity,
                     vertex.stateOpacity,
                     deltaTime,
-                    chartState.axisOpacityChangeSpeed
+                    chartState.axisYOpacityChangeSpeed
             );
 
             vertex.yOffset = MathUtils.interpTo(
@@ -711,11 +711,11 @@ public class ChartSolverImpl implements ChartSolver {
 
                 vertex.x = current.x;
                 vertex.y = current.y;
-                vertex.title = current.title;
 
                 if (vertex.opacity < 0.01f) {
                     vertex.yOffset = 0f;
                     vertex.stateYOffset = -deltaMaxY;
+                    vertex.title = current.title;
                 } else {
                     vertex.stateYOffset -= deltaMaxY;
                 }
@@ -733,6 +733,14 @@ public class ChartSolverImpl implements ChartSolver {
             for (AxisVertex vertex : chartState.yAxisCurrent) {
                 current -= delta;
                 currentValue += deltaValue;
+
+                if (vertex.opacity > 0.9f) {
+                    vertex.yOffset = deltaMaxY;
+                    vertex.stateYOffset = 0f;
+                } else {
+                    vertex.stateYOffset = 0f;
+                    vertex.yOffset += deltaMaxY;
+                }
 
                 vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
                 vertex.y = current;

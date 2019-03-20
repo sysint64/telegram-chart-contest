@@ -18,8 +18,9 @@ class ChartState {
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
     float minimapMaxYChangeSpeed = 150f;
-    float axisOpacityChangeSpeed = 50f;
-    float axisYOffsetChangeSpeed = 50f;
+    float axisXOpacityChangeSpeed = 50f;
+    float axisYOpacityChangeSpeed = 150f;
+    float axisYOffsetChangeSpeed = 150f;
     float axisXDistance = MeasureUtils.convertDpToPixel(240);
     float axisXOffsetY = MeasureUtils.convertDpToPixel(20);
     float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
