@@ -7,6 +7,9 @@ class ChartData {
     final String name;
     final String color;
     final List<Vertex> originalData = new ArrayList<>();
+    final List<Vertex> minimapPointsPool = new ArrayList<>();
+    final List<Vertex> previewPointsPool = new ArrayList<>();
+
     final List<Vertex> minimapPoints = new ArrayList<>();
     final List<Vertex> previewPoints = new ArrayList<>();
 
@@ -22,5 +25,3 @@ class ChartData {
         this.color = color;
     }
 }
-
-// 0, 18, 36, 54, 72, 90

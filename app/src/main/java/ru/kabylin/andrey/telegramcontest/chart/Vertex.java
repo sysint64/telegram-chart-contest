@@ -1,8 +1,8 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 class Vertex {
-    final long x;
-    final long y;
+    long x;
+    long y;
 
     Vertex(long x, long y) {
         this.x = x;

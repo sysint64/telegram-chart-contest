@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: Encapsulation
-final class ChartState {
+public final class ChartState {
     int minimapPreviewLeft = 100;
     int minimapPreviewRight = minimapPreviewLeft + 100;
     int minimapPreviewResizeAreaSize = 20;
@@ -26,6 +26,7 @@ final class ChartState {
     float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
     float axisYTextOffsetY = MeasureUtils.convertDpToPixel(5);
     float axisYTopPadding = MeasureUtils.convertDpToPixel(40);
+    float minAxisXDelta = MeasureUtils.convertDpToPixel(10);
 
     List<ChartData> charts = new ArrayList<>();
 
@@ -41,6 +42,8 @@ final class ChartState {
     final List<AxisVertex> previewAxisX = new ArrayList<>();
     final List<AxisVertex> previewAxisY = new ArrayList<>();
 
+    final List<Long> xValues = new ArrayList<>();
+
     final Popup popup = new Popup();
 
     Rect getMinimapPreviewRect() {
@@ -54,5 +57,29 @@ final class ChartState {
 
     int minimapPreviewSize() {
         return minimapPreviewRight - minimapPreviewLeft;
+    }
+
+    public void setX(List<Long> x) {
+        if (!xValues.isEmpty()) {
+            throw new AssertionError("xValues already set");
+        }
+
+        this.xValues.addAll(x);
+    }
+
+    public void addChart(String color, String name, List<Long> y) {
+        if (xValues.size() != y.size()) {
+            throw new AssertionError(xValues.size() + " != " + y.size());
+        }
+
+        final ChartData chart = new ChartData(name, color);
+
+        for (int i = 0; i < xValues.size(); ++i) {
+            chart.originalData.add(new Vertex(xValues.get(i), y.get(i)));
+            chart.minimapPointsPool.add(new Vertex(0, 0));
+            chart.previewPointsPool.add(new Vertex(0, 0));
+        }
+
+        charts.add(chart);
     }
 }

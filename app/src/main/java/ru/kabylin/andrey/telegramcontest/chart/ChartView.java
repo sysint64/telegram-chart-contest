@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ChartView extends View {
@@ -40,8 +41,19 @@ public final class ChartView extends View {
     private Rect minimapOverlayLeftRect = new Rect();
     private Rect minimapOverlayRightRect = new Rect();
 
+    private boolean isInit = false;
+
+    public void setChartState(ChartState chartState) {
+        chartSolver.setChartState(chartState);
+        isInit = true;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
+        if (!isInit) {
+            return;
+        }
+
         drawMinimap(canvas);
         drawMinimapPreview(canvas);
 
@@ -67,6 +79,7 @@ public final class ChartView extends View {
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(1);
+        paint.setStrokeCap(Paint.Cap.BUTT);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));
@@ -127,6 +140,7 @@ public final class ChartView extends View {
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(3);
+        paint.setStrokeCap(Paint.Cap.ROUND);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));
@@ -136,15 +150,18 @@ public final class ChartView extends View {
     }
 
     private void drawPath(Canvas canvas, List<Vertex> points) {
-        Vertex prevVertex = null;
+        final float[] rawPoints = new float[points.size() * 4];
 
-        for (final Vertex vertex : points) {
-            if (prevVertex != null) {
-                canvas.drawLine(prevVertex.x, prevVertex.y, vertex.x, vertex.y, paint);
-            }
+        int index = 0;
 
-            prevVertex = vertex;
+        for (int i = 0; i < points.size() - 1; ++i) {
+            rawPoints[index++] = points.get(i).x;
+            rawPoints[index++] = points.get(i).y;
+            rawPoints[index++] = points.get(i + 1).x;
+            rawPoints[index++] = points.get(i + 1).y;
         }
+
+        canvas.drawLines(rawPoints, paint);
     }
 
     private void drawAxisX(Canvas canvas) {

@@ -22,4 +22,6 @@ public interface ChartSolver {
     void calculateAxisXPoints(final Rect rect);
 
     void calculateAxisYPoints(final Rect rect);
+
+    void setChartState(ChartState chartState);
 }
