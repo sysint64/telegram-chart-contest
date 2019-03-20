@@ -61,7 +61,7 @@ public final class ChartView extends View {
         drawAxisX(canvas);
         drawAxisYLabels(canvas);
 //        drawPopup(canvas);
-//
+
         chartSolver.onProgress();
         invalidate();
     }

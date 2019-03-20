@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final String json = readJson();
 
             JSONArray jsonArray = new JSONArray(json);
-            JSONObject jsonObject = jsonArray.getJSONObject(4);
+            JSONObject jsonObject = jsonArray.getJSONObject(1);
 
             loadCharts(jsonObject, chartView);
         } catch (IOException | JSONException e) {

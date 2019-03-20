@@ -86,7 +86,7 @@ public class ChartSolverImpl implements ChartSolver {
             final ChartData chartData = chartState.charts.get(i);
 
             if (chartData.isVisible) {
-                final List<Vertex> points = getMinimapPreviewPoints(chartData, i);
+                final List<Vertex> points = getMinimapPreviewPoints(chartData, i, true);
                 subCharts.add(points);
             }
         }
@@ -100,11 +100,13 @@ public class ChartSolverImpl implements ChartSolver {
 
         for (int i = 0; i < chartState.charts.size(); ++i) {
             final ChartData chartData = chartState.charts.get(i);
-            calculatePreviewPoints(rect, chartState.previewMaxY, chartData, subCharts.get(i));
+            calculatePreviewPoints(rect, chartState.previewMaxY, chartData, i);
         }
     }
 
-    private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData, final List<Vertex> minimapPreviewPoints) {
+    private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData, final int index) {
+        final List<Vertex> minimapPreviewPoints = getMinimapPreviewPoints(chartData, index, false);
+
         chartData.previewPoints.clear();
 
         final long x0 = chartState.minimapPreviewLeft;
@@ -134,7 +136,7 @@ public class ChartSolverImpl implements ChartSolver {
         return rect.bottom - (y / yMax) * (rect.bottom - rect.top);
     }
 
-    private List<Vertex> getMinimapPreviewPoints(final ChartData chartData, final int previewOriginalPointIndex) {
+    private List<Vertex> getMinimapPreviewPoints(final ChartData chartData, final int previewOriginalPointIndex, final boolean ignoreBorder) {
         previewOriginalPoints.get(previewOriginalPointIndex).clear();
 
         Vertex prevPoint = null;
@@ -146,9 +148,9 @@ public class ChartSolverImpl implements ChartSolver {
             point.x = chartData.minimapPoints.get(i).x;
             point.y = chartData.originalData.get(i).y;
 
-            if (point.x >= chartState.minimapPreviewLeft && point.x <= chartState.minimapPreviewRight) {
+            if (point.x > chartState.minimapPreviewLeft && point.x < chartState.minimapPreviewRight) {
                 // Add point before left border
-                if (prevPoint != null && !firstPointSet) {
+                if (prevPoint != null && !firstPointSet && !ignoreBorder) {
                     previewOriginalPoints.get(previewOriginalPointIndex).add(prevPoint);
                 }
 
@@ -156,7 +158,9 @@ public class ChartSolverImpl implements ChartSolver {
                 firstPointSet = true;
             } else if (firstPointSet) {
                 // Add point after right border
-                previewOriginalPoints.get(previewOriginalPointIndex).add(point);
+                if (!ignoreBorder) {
+                    previewOriginalPoints.get(previewOriginalPointIndex).add(point);
+                }
                 break;
             } else {
                 prevPoint = point;
@@ -259,8 +263,11 @@ public class ChartSolverImpl implements ChartSolver {
     @Override
     public void onProgress() {
         final long time = System.nanoTime();
-//        final float deltaTime = (time - lastTime) / 1000000f / 10000f;
-        final float deltaTime = 0.005f;
+        float deltaTime = (time - lastTime) / 1000000f / 10000f;
+
+        if (deltaTime > 0.1f) {
+            deltaTime = 0.1f;
+        }
 
         chartState.previewMaxY = MathUtils.interpTo(
                 chartState.previewMaxY,
@@ -457,16 +464,16 @@ public class ChartSolverImpl implements ChartSolver {
                 vertex.x = current.x;
                 vertex.y = current.y;
 
-                if (vertex.opacity < 0.01f) {
+                if (vertex.opacity < 0.1f) {
                     vertex.yOffset = 0f;
                     vertex.stateYOffset = -deltaMaxY;
                     vertex.title = current.title;
+
+                    vertex.opacity = 1f;
+                    vertex.stateOpacity = 0f;
                 } else {
                     vertex.stateYOffset -= deltaMaxY;
                 }
-
-                vertex.stateOpacity = 0f;
-                vertex.opacity = 1f;
             }
 
             final long delta = (int) ((rect.bottom - rect.top - chartState.axisYTopPadding) / 5f);
@@ -483,14 +490,14 @@ public class ChartSolverImpl implements ChartSolver {
                     vertex.yOffset = deltaMaxY;
                     vertex.stateYOffset = 0f;
                 } else {
-                    vertex.stateYOffset = 0f;
                     vertex.yOffset += deltaMaxY;
                 }
 
-                vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
-                vertex.y = current;
                 vertex.opacity = 0f;
                 vertex.stateOpacity = 1f;
+
+                vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
+                vertex.y = current;
                 vertex.title = String.valueOf(currentValue);
             }
         }
