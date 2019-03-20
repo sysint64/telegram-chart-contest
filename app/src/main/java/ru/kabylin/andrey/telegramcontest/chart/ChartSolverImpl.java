@@ -13,9 +13,18 @@ public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
     private long lastTime = System.nanoTime();
 
+    private final List<List<Vertex>> subCharts = new ArrayList<>();
+    private final ArrayList<ArrayList<Vertex>> previewOriginalPoints = new ArrayList<>();
+
     public void setChartState(ChartState chartState) {
         this.chartState = chartState;
         fillAxisPoints(this.chartState.xValues);
+
+        previewOriginalPoints.clear();
+
+        for (final ChartData chartData : chartState.charts) {
+            previewOriginalPoints.add(new ArrayList<Vertex>());
+        }
     }
 
     private void fillAxisPoints(List<Long> xValues) {
@@ -27,13 +36,11 @@ public class ChartSolverImpl implements ChartSolver {
         long x = x0;
 
         for (int i = 0; i < count; ++i) {
-            chartState.xAxis.add(
-                    new AxisVertex(
-                            x,
-                            0,
-                            DateUtils.humanizeDate(new Date(x)).split(",")[0]
-                    )
-            );
+            final String title = DateUtils.humanizeDate(new Date(x)).split(",")[0];
+
+            chartState.xAxis.add(new AxisVertex(x, 0, title));
+            chartState.axisXPool.add(new AxisVertex(x, 0, title));
+            chartState.previewAxisXPool.add(new AxisVertex(x, 0, title));
 
             x += delta;
         }
@@ -66,9 +73,6 @@ public class ChartSolverImpl implements ChartSolver {
 
             projectVertex(originalVertex, minimapVertex, rect, x0, y0, xLast, yMax);
             chartData.minimapPoints.add(minimapVertex);
-//        for (final Vertex vertex : chartData.originalData) {
-//            chartData.minimapPoints.add(projectVertex(vertex, rect, x0, y0, xLast, yMax));
-//            projectVertex(vertex, rect, x0, y0, xLast, yMax);
         }
 
         chartState.minimapRect = rect;
@@ -76,11 +80,13 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculatePreviewPoints(Rect rect) {
-        final List<List<Vertex>> subCharts = new ArrayList<>();
+        subCharts.clear();
 
-        for (final ChartData chartData : chartState.charts) {
+        for (int i = 0; i < chartState.charts.size(); ++i) {
+            final ChartData chartData = chartState.charts.get(i);
+
             if (chartData.isVisible) {
-                final List<Vertex> points = getMinimapPreviewPoints(chartData);
+                final List<Vertex> points = getMinimapPreviewPoints(chartData, i);
                 subCharts.add(points);
             }
         }
@@ -92,31 +98,27 @@ public class ChartSolverImpl implements ChartSolver {
             chartState.isInitPreviewMaxY = true;
         }
 
-        for (final ChartData chartData : chartState.charts) {
-            // TODO: можно передать уже посчитанные точки методом `getMinimapPreviewPoints`
-            calculatePreviewPoints(rect, chartState.previewMaxY, chartData);
+        for (int i = 0; i < chartState.charts.size(); ++i) {
+            final ChartData chartData = chartState.charts.get(i);
+            calculatePreviewPoints(rect, chartState.previewMaxY, chartData, subCharts.get(i));
         }
     }
 
-    private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData) {
+    private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData, final List<Vertex> minimapPreviewPoints) {
         chartData.previewPoints.clear();
-        final List<Vertex> points = getMinimapPreviewPoints(chartData);
 
         final long x0 = chartState.minimapPreviewLeft;
         final long y0 = chartState.minimapRect.bottom;
 
         final float xLast = chartState.minimapPreviewRight;
 
-        for (final Vertex vertex : points) {
-            chartData.previewPoints.add(projectVertex(vertex, rect, x0, y0, xLast, yMax));
-        }
-    }
+        for (int i = 0; i < minimapPreviewPoints.size(); ++i) {
+            final Vertex point = minimapPreviewPoints.get(i);
+            final Vertex previewPoint = chartData.previewPointsPool.get(i);
 
-    private Vertex projectVertex(Vertex vertex, Rect rect, float x0, float y0, float xMax, float yMax) {
-        return new Vertex(
-                projectX(vertex.x, rect, x0, xMax),
-                projectY(vertex.y, rect, y0, yMax)
-        );
+            projectVertex(point, previewPoint, rect, x0, y0, xLast, yMax);
+            chartData.previewPoints.add(previewPoint);
+        }
     }
 
     private void projectVertex(Vertex vertex, Vertex to, Rect rect, float x0, float y0, float xMax, float yMax) {
@@ -132,36 +134,36 @@ public class ChartSolverImpl implements ChartSolver {
         return rect.bottom - (y / yMax) * (rect.bottom - rect.top);
     }
 
-    private List<Vertex> getMinimapPreviewPoints(final ChartData chartData) {
-        final ArrayList<Vertex> previewOriginalPoints = new ArrayList<>();
+    private List<Vertex> getMinimapPreviewPoints(final ChartData chartData, final int previewOriginalPointIndex) {
+        previewOriginalPoints.get(previewOriginalPointIndex).clear();
+
         Vertex prevPoint = null;
         boolean firstPointSet = false;
 
         for (int i = 0; i < chartData.originalData.size(); ++i) {
-            final Vertex point = new Vertex(
-                    chartData.minimapPoints.get(i).x,
-                    chartData.originalData.get(i).y
-            );
-//            final Vertex point = chartData.minimapPointsPool
+            final Vertex point = chartData.minimapInnerPreviewPool.get(i);
+
+            point.x = chartData.minimapPoints.get(i).x;
+            point.y = chartData.originalData.get(i).y;
 
             if (point.x >= chartState.minimapPreviewLeft && point.x <= chartState.minimapPreviewRight) {
                 // Add point before left border
                 if (prevPoint != null && !firstPointSet) {
-                    previewOriginalPoints.add(prevPoint);
+                    previewOriginalPoints.get(previewOriginalPointIndex).add(prevPoint);
                 }
 
-                previewOriginalPoints.add(point);
+                previewOriginalPoints.get(previewOriginalPointIndex).add(point);
                 firstPointSet = true;
             } else if (firstPointSet) {
                 // Add point after right border
-                previewOriginalPoints.add(point);
+                previewOriginalPoints.get(previewOriginalPointIndex).add(point);
                 break;
             } else {
                 prevPoint = point;
             }
         }
 
-        return previewOriginalPoints;
+        return previewOriginalPoints.get(previewOriginalPointIndex);
     }
 
     private void findMaxByYInCharts(final List<ChartData> charts) {
@@ -327,7 +329,7 @@ public class ChartSolverImpl implements ChartSolver {
     @Override
     public void calculateAxisXPoints(Rect rect) {
         chartState.previewAxisX.clear();
-        final List<AxisVertex> vertices = getPreviewAxisVertices();
+        final List<AxisVertex> vertices = getPreviewAxisXVertices();
 
         if (vertices.isEmpty()) {
             return;
@@ -376,21 +378,21 @@ public class ChartSolverImpl implements ChartSolver {
 
     private void projectAxisXVertex(Rect rect, List<AxisVertex> vertices, int index, float stateOpacity) {
         final AxisVertex vertex = vertices.get(index);
-        projectAxisXVertex(rect, vertex, stateOpacity);
+        projectAxisXVertex(rect, vertex, index, stateOpacity);
     }
 
-    private void projectAxisXVertex(Rect rect, AxisVertex vertex, float stateOpacity) {
+    private void projectAxisXVertex(Rect rect, AxisVertex vertex, int index, float stateOpacity) {
+        AxisVertex previewVertex = chartState.previewAxisXPool.get(index);
+
+        previewVertex.x = (int) projectValueAxisXVertex(rect, vertex);
+        previewVertex.y = (int) (rect.bottom + chartState.axisXOffsetY);
+        previewVertex.title = vertex.title;
+        previewVertex.stateOpacity = stateOpacity;
+        previewVertex.opacity = vertex.opacity;
+        previewVertex.original = vertex.original;
+
         vertex.original.stateOpacity = stateOpacity;
-        chartState.previewAxisX.add(
-                new AxisVertex(
-                        (int) projectValueAxisXVertex(rect, vertex),
-                        (int) (rect.bottom + chartState.axisXOffsetY),
-                        vertex.title,
-                        stateOpacity,
-                        vertex.opacity,
-                        vertex.original
-                )
-        );
+        chartState.previewAxisX.add(previewVertex);
     }
 
     private float projectValueAxisXVertex(Rect rect, List<AxisVertex> vertices, int index) {
@@ -404,25 +406,25 @@ public class ChartSolverImpl implements ChartSolver {
         return projectX(vertex.x, rect, x0, xMax);
     }
 
-    private List<AxisVertex> getPreviewAxisVertices() {
+    private List<AxisVertex> getPreviewAxisXVertices() {
         final List<AxisVertex> vertices = new ArrayList<>();
 
         final long x0 = chartState.xAxis.get(0).x;
         final float xMax = chartState.xAxis.get(chartState.xAxis.size() - 1).x;
 
-        for (final AxisVertex vertex : chartState.xAxis) {
-            final float minimapX = projectX(vertex.x, chartState.minimapRect, x0, xMax);
+        for (int i = 0; i < chartState.xAxis.size(); ++i) {
+            final AxisVertex originalVertex = chartState.xAxis.get(i);
+            AxisVertex previewVertex = chartState.axisXPool.get(i);
+            final float minimapX = projectX(originalVertex.x, chartState.minimapRect, x0, xMax);
 
-            vertices.add(
-                    new AxisVertex(
-                            (long) minimapX,
-                            vertex.y,
-                            vertex.title,
-                            vertex.stateOpacity,
-                            vertex.opacity,
-                            vertex
-                    )
-            );
+            previewVertex.x = (long) minimapX;
+            previewVertex.y = originalVertex.y;
+            previewVertex.title = originalVertex.title;
+            previewVertex.stateOpacity = originalVertex.stateOpacity;
+            previewVertex.opacity = originalVertex.opacity;
+            previewVertex.original = originalVertex;
+
+            vertices.add(previewVertex);
         }
 
         return vertices;
@@ -443,7 +445,10 @@ public class ChartSolverImpl implements ChartSolver {
 
         if (Math.floor(chartState.lastStatePreviewMaxY) != Math.floor(chartState.statePreviewMaxY)) {
             float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((chartState.lastStatePreviewMaxY - chartState.statePreviewMaxY) / Math.max(chartState.lastStatePreviewMaxY, chartState.statePreviewMaxY));
-            deltaMaxY = Math.max(deltaMaxY, chartState.minAxisXDelta);
+
+            if (Math.abs(deltaMaxY) < chartState.minAxisXDelta) {
+                deltaMaxY = 0;
+            }
 
             for (int i = 0; i < chartState.yAxisPast.size(); ++i) {
                 AxisVertex vertex = chartState.yAxisPast.get(i);
@@ -493,17 +498,14 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.lastStatePreviewMaxY = chartState.statePreviewMaxY;
 
         chartState.previewAxisY.clear();
-        chartState.previewAxisY.add(
-                new AxisVertex(
-                        (int) (rect.left + chartState.axisYTextOffsetX),
-                        rect.bottom,
-                        "0",
-                        1f,
-                        1f,
-                        null
-                )
-        );
 
+        chartState.previewAxisYZero.x = (int) (rect.left + chartState.axisYTextOffsetX);
+        chartState.previewAxisYZero.y = rect.bottom;
+        chartState.previewAxisYZero.title = "0";
+        chartState.previewAxisYZero.opacity = 1f;
+        chartState.previewAxisYZero.stateOpacity = 1f;
+
+        chartState.previewAxisY.add(chartState.previewAxisYZero);
         chartState.previewAxisY.addAll(chartState.yAxisCurrent);
         chartState.previewAxisY.addAll(chartState.yAxisPast);
     }

@@ -14,7 +14,7 @@ final class AxisVertex {
     float yOffset = 0f;
 
     boolean isInit = false;
-    final AxisVertex original;
+    AxisVertex original;
 
     AxisVertex(long x, long y, String title) {
         this.x = x;

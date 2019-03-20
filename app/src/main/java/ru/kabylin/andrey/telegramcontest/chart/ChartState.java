@@ -3,6 +3,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 import android.graphics.Rect;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,11 @@ public final class ChartState {
     final List<AxisVertex> previewAxisX = new ArrayList<>();
     final List<AxisVertex> previewAxisY = new ArrayList<>();
 
+    final AxisVertex previewAxisYZero = new AxisVertex(0, 0, "0");
+
+    final List<AxisVertex> axisXPool = new ArrayList<>();
+    final List<AxisVertex> previewAxisXPool = new ArrayList<>();
+
     final List<Long> xValues = new ArrayList<>();
 
     final Popup popup = new Popup();
@@ -78,6 +84,7 @@ public final class ChartState {
             chart.originalData.add(new Vertex(xValues.get(i), y.get(i)));
             chart.minimapPointsPool.add(new Vertex(0, 0));
             chart.previewPointsPool.add(new Vertex(0, 0));
+            chart.minimapInnerPreviewPool.add(new Vertex(0, 0));
         }
 
         charts.add(chart);

@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class ChartView extends View {
@@ -61,8 +60,8 @@ public final class ChartView extends View {
         drawPreview(canvas);
         drawAxisX(canvas);
         drawAxisYLabels(canvas);
-        drawPopup(canvas);
-
+//        drawPopup(canvas);
+//
         chartSolver.onProgress();
         invalidate();
     }
@@ -79,7 +78,6 @@ public final class ChartView extends View {
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(1);
-        paint.setStrokeCap(Paint.Cap.BUTT);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));
@@ -140,7 +138,6 @@ public final class ChartView extends View {
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth(3);
-        paint.setStrokeCap(Paint.Cap.ROUND);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(Color.parseColor(chart.color));

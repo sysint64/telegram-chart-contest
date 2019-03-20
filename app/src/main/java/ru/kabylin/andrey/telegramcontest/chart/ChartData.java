@@ -7,6 +7,7 @@ class ChartData {
     final String name;
     final String color;
     final List<Vertex> originalData = new ArrayList<>();
+    final List<Vertex> minimapInnerPreviewPool = new ArrayList<>();
     final List<Vertex> minimapPointsPool = new ArrayList<>();
     final List<Vertex> previewPointsPool = new ArrayList<>();
 

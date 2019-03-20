@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkBox0.setOnClickListener(this);
         checkBox1.setOnClickListener(this);
 
-//
-
         try {
             final String json = readJson();
 
