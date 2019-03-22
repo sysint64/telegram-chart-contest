@@ -1,5 +1,6 @@
 package ru.kabylin.andrey.telegramcontest;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,10 +28,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CheckBox checkBox1 = null;
 
     private boolean nightMode = false;
+    public ChartState chartState = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null && savedInstanceState.containsKey("chartState")) {
+            chartState = savedInstanceState.getParcelable("chartState");
+        }
 
         final SharedPreferences preferences = getSharedPreferences("theme", MODE_PRIVATE);
         nightMode = preferences.getBoolean("night_mode", false);
@@ -45,20 +51,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkBox0.setOnClickListener(this);
         checkBox1.setOnClickListener(this);
 
-        if (MainActivityState.INSTANCE.chartState == null) {
+        if (chartState == null) {
             try {
                 final String json = readJson();
 
                 JSONArray jsonArray = new JSONArray(json);
                 JSONObject jsonObject = jsonArray.getJSONObject(1);
 
-                MainActivityState.INSTANCE.chartState = ChartJsonLoader.loadCharts(jsonObject);
-                chartView.setChartState(MainActivityState.INSTANCE.chartState);
+                chartState = ChartJsonLoader.loadCharts(jsonObject);
+                chartView.setChartState(chartState);
             } catch (IOException | JSONException e) {
                 Log.e("ChartView", "JSON LOAD ERROR");
             }
         } else {
-            chartView.setChartState(MainActivityState.INSTANCE.chartState);
+            chartView.setChartState(chartState);
         }
     }
 
@@ -96,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    @SuppressLint("ApplySharedPref")
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toolbar_menu_toggle_night_mode:
@@ -110,6 +117,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (chartState != null) {
+            outState.putParcelable("chartState", chartState);
         }
     }
 }

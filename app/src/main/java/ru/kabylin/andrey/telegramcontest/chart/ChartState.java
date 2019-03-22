@@ -2,6 +2,8 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public final class ChartState {
+public final class ChartState implements Parcelable {
     int minimapPreviewLeft = 100;
     int minimapPreviewRight = minimapPreviewLeft + 100;
     int minimapPreviewResizeAreaSize = 20;
@@ -66,6 +68,51 @@ public final class ChartState {
 
     boolean isInit = false;
 
+    public ChartState() {
+    }
+
+    protected ChartState(Parcel in) {
+        minimapPreviewLeft = in.readInt();
+        minimapPreviewRight = in.readInt();
+        minimapPreviewResizeAreaSize = in.readInt();
+        minimapRect = in.readParcelable(Rect.class.getClassLoader());
+        previewRect = in.readParcelable(Rect.class.getClassLoader());
+        isInitPreviewMaxY = in.readByte() != 0;
+        statePreviewMaxY = in.readFloat();
+        previewMaxY = in.readFloat();
+        previewMaxYChangeSpeed = in.readFloat();
+        opacityChangeSpeed = in.readFloat();
+        minimapMaxYChangeSpeed = in.readFloat();
+        axisXOpacityChangeSpeed = in.readFloat();
+        axisYOpacityChangeSpeed = in.readFloat();
+        axisYOffsetChangeSpeed = in.readFloat();
+        popupOpacityChangeSpeed = in.readFloat();
+        axisXDistance = in.readFloat();
+        axisXOffsetY = in.readFloat();
+        axisYTextOffsetX = in.readFloat();
+        axisYTextOffsetY = in.readFloat();
+        axisYTopPadding = in.readFloat();
+        axisXIsInit = in.readByte() != 0;
+        axisYIsInit = in.readByte() != 0;
+        minAxisYDelta = in.readFloat();
+        intersectPointSize = in.readFloat();
+        intersectPointStrokeWidth = in.readFloat();
+        lastStatePreviewMaxY = in.readFloat();
+        isInit = in.readByte() != 0;
+    }
+
+    public static final Creator<ChartState> CREATOR = new Creator<ChartState>() {
+        @Override
+        public ChartState createFromParcel(Parcel in) {
+            return new ChartState(in);
+        }
+
+        @Override
+        public ChartState[] newArray(int size) {
+            return new ChartState[size];
+        }
+    };
+
     Rect getMinimapPreviewRect() {
         return new Rect(
                 minimapPreviewLeft,
@@ -106,5 +153,41 @@ public final class ChartState {
         }
 
         charts.add(chart);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(minimapPreviewLeft);
+        dest.writeInt(minimapPreviewRight);
+        dest.writeInt(minimapPreviewResizeAreaSize);
+        dest.writeParcelable(minimapRect, flags);
+        dest.writeParcelable(previewRect, flags);
+        dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));
+        dest.writeFloat(statePreviewMaxY);
+        dest.writeFloat(previewMaxY);
+        dest.writeFloat(previewMaxYChangeSpeed);
+        dest.writeFloat(opacityChangeSpeed);
+        dest.writeFloat(minimapMaxYChangeSpeed);
+        dest.writeFloat(axisXOpacityChangeSpeed);
+        dest.writeFloat(axisYOpacityChangeSpeed);
+        dest.writeFloat(axisYOffsetChangeSpeed);
+        dest.writeFloat(popupOpacityChangeSpeed);
+        dest.writeFloat(axisXDistance);
+        dest.writeFloat(axisXOffsetY);
+        dest.writeFloat(axisYTextOffsetX);
+        dest.writeFloat(axisYTextOffsetY);
+        dest.writeFloat(axisYTopPadding);
+        dest.writeByte((byte) (axisXIsInit ? 1 : 0));
+        dest.writeByte((byte) (axisYIsInit ? 1 : 0));
+        dest.writeFloat(minAxisYDelta);
+        dest.writeFloat(intersectPointSize);
+        dest.writeFloat(intersectPointStrokeWidth);
+        dest.writeFloat(lastStatePreviewMaxY);
+        dest.writeByte((byte) (isInit ? 1 : 0));
     }
 }
