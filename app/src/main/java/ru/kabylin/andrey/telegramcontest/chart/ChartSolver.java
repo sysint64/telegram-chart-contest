@@ -24,4 +24,8 @@ public interface ChartSolver {
     void calculateAxisYPoints(final Rect rect);
 
     void setChartState(ChartState chartState);
+
+    void dropPopup(final float touchX, final float touchY);
+
+    void hidePopup();
 }

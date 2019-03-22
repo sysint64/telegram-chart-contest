@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 class ChartUserInteractorImpl implements ChartUserInteractor  {
     enum State {
         NONE,
+        POPUP_MOVE,
         MINIMAP_MOVE,
         MINIMAP_RESIZE_LEFT,
         MINIMAP_RESIZE_RIGHT,
@@ -20,6 +21,8 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
 
     private float onActionDownMinimapPreviewLeft = 0;
     private float onActionDownMinimapPreviewRight = 0;
+
+    private Vertex pointUnderMouse = new Vertex();
 
     ChartUserInteractorImpl(ChartSolver chartSolver) {
         this.chartSolver = chartSolver;
@@ -39,6 +42,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
 
             case MotionEvent.ACTION_UP:
                 state = State.NONE;
+                chartSolver.hidePopup();
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -51,7 +55,8 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
 
     private boolean onTouchDown(float touchX, float touchY) {
         final ChartState chartState = chartSolver.getState();
-        final Rect previewRect = chartState.getMinimapPreviewRect();
+        final Rect minimapPreviewRect = chartState.getMinimapPreviewRect();
+        final Rect previewRect = chartState.previewRect;
 
         onActionDownTouchX = touchX;
         onActionDownTouchY = touchY;
@@ -60,28 +65,35 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
             return false;
         }
 
-        if (touchX > previewRect.left && touchX < previewRect.left + chartState.minimapPreviewResizeAreaSize &&
-                touchY > previewRect.top && touchY < previewRect.bottom)
+        if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.left + chartState.minimapPreviewResizeAreaSize &&
+                touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state = State.MINIMAP_RESIZE_LEFT;
             onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
             onActionDownMinimapPreviewRight = chartState.minimapPreviewRight;
             return true;
         }
-        else if (touchX > previewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < previewRect.right &&
-                touchY > previewRect.top && touchY < previewRect.bottom)
+        else if (touchX > minimapPreviewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < minimapPreviewRect.right &&
+                touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state = State.MINIMAP_RESIZE_RIGHT;
             onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
             onActionDownMinimapPreviewRight = chartState.minimapPreviewRight;
             return true;
         }
-        else  if (touchX > previewRect.left && touchX < previewRect.right &&
-                touchY > previewRect.top && touchY < previewRect.bottom)
+        else  if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.right &&
+                touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state = State.MINIMAP_MOVE;
             onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
             Log.d("ChartView", "update state to MINIMAP_MOVE");
+            return true;
+        }
+        else if (touchX > previewRect.left && touchX < previewRect.right &&
+                touchY > previewRect.top && touchY < previewRect.bottom)
+        {
+            state = State.POPUP_MOVE;
+            chartSolver.dropPopup(touchX, touchY);
             return true;
         }
 
@@ -103,6 +115,10 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
 
             case MINIMAP_RESIZE_RIGHT:
                 chartSolver.setMinimapRight(onActionDownMinimapPreviewRight + delta);
+                return true;
+
+            case POPUP_MOVE:
+                chartSolver.dropPopup(touchX, touchY);
                 return true;
 
             default:

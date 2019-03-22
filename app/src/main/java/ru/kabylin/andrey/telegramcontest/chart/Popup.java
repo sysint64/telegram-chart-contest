@@ -7,19 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class Popup {
-    private float stateOpacity = 0f;
-    float opacity = 1f;
-    int left = 200;
-    int top = 0;
-    final List<PopupItem> items = new ArrayList<>();
-    String title = "Sat, Feb 24";
+    float stateOpacity = 0f;
+    float opacity = 0f;
+    int left = 0;
+    private int top = 0;
+    private final List<PopupItem> items = new ArrayList<>();
+    private String title = "Sat, Feb 24";
+    boolean isVisible = false;
 
     Popup() {
         items.add(new PopupItem(Color.GREEN, "122", "#0"));
         items.add(new PopupItem(Color.RED, "67", "#1"));
     }
 
-    final class PopupItem {
+    final static class PopupItem {
         final int color;
         final String value;
         final String title;
@@ -43,10 +44,13 @@ final class Popup {
         this.items.addAll(items);
         this.title = title;
         this.stateOpacity = 1f;
+        this.left = (int) x;
+        this.isVisible = true;
     }
 
     void hide() {
         this.stateOpacity = 0f;
+        this.isVisible = false;
     }
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -66,15 +70,15 @@ final class Popup {
     private final float itemTitleTopMargin = MeasureUtils.convertDpToPixel(4);
     private final float itemRightMargin = MeasureUtils.convertDpToPixel(16);
 
-    void draw(Canvas canvas) {
-        measure();
+    void draw(Canvas canvas, Rect rect) {
+        measure(rect, MeasureUtils.convertDpToPixel(20));
 
         drawBackground(canvas);
         drawTitle(canvas);
         drawItems(canvas);
     }
 
-    private void measure() {
+    private void measure(Rect rect, float offsetX) {
         final float dp1 = MeasureUtils.convertDpToPixel(1);
         final float dp2 = MeasureUtils.convertDpToPixel(2);
         final float dp4 = MeasureUtils.convertDpToPixel(4);
@@ -84,17 +88,7 @@ final class Popup {
         paint.setTextSize(titleTextSize);
         paint.getTextBounds(title, 0, title.length(), titleBounds);
 
-        float lastItemLeft = popupRect.left + dp8;
-
-        for (PopupItem item : items) {
-            paint.setTextSize(itemValueTextSize);
-            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
-
-            paint.setTextSize(itemTitleTextSize);
-            paint.getTextBounds(item.title, 0, item.title.length(), item.titleBounds);
-        }
-
-        final float offsetX = MeasureUtils.convertDpToPixel(20);
+//        float offsetX = MeasureUtils.convertDpToPixel(20);
         final float popupWidth = titleBounds.width();
 
         popupRect.set(
@@ -124,6 +118,16 @@ final class Popup {
         float top = 0;
         float bottom = 0;
 
+        float lastItemLeft = popupRect.left + dp8;
+
+        for (PopupItem item : items) {
+            paint.setTextSize(itemValueTextSize);
+            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
+
+            paint.setTextSize(itemTitleTextSize);
+            paint.getTextBounds(item.title, 0, item.title.length(), item.titleBounds);
+        }
+
         //
         for (PopupItem item : items) {
             // Value
@@ -149,20 +153,40 @@ final class Popup {
 
         shadowRectLevel2.bottom = bottom + dp2;
         shadowRectLevel2.right = Math.max(shadowRectLevel1.right, lastItemLeft - itemRightMargin + dp8 + dp1);
+
+        if (popupRect.left <= rect.left) {
+            final float newOffset = -MeasureUtils.convertDpToPixel(10);
+
+            if (left - newOffset > rect.left) {
+                measure(rect, newOffset);
+            }
+        }
+
+        if (popupRect.right >= rect.right) {
+            final float newOffset = popupRect.right - rect.right + MeasureUtils.convertDpToPixel(30);
+
+            if (left - newOffset + popupRect.width() < rect.right) {
+                measure(rect, newOffset);
+            }
+            else {
+                measure(rect, popupRect.width() + MeasureUtils.convertDpToPixel(10));
+            }
+        }
     }
 
     private void drawBackground(Canvas canvas) {
         paint.setStyle(Paint.Style.FILL);
 
         paint.setColor(Color.parseColor("#dbdbdb"));
-        paint.setAlpha(80);
+        paint.setAlpha((int) (80f * opacity));
         canvas.drawRoundRect(shadowRectLevel1, radius, radius, paint);
 
         paint.setColor(Color.parseColor("#cccccc"));
-        paint.setAlpha(80);
+        paint.setAlpha((int) (80f * opacity));
         canvas.drawRoundRect(shadowRectLevel2, radius, radius, paint);
 
         paint.setColor(Color.parseColor("#ffffff"));
+        paint.setAlpha((int) (255f * opacity));
         canvas.drawRoundRect(popupRect, radius, radius, paint);
 
         paint.setStyle(Paint.Style.FILL);
@@ -170,6 +194,7 @@ final class Popup {
 
     private void drawTitle(Canvas canvas) {
         paint.setColor(Color.BLACK);
+        paint.setAlpha((int) (255f * opacity));
         paint.setTextSize(titleTextSize);
 
         canvas.drawText(title, titleLeft, titleTop, paint);
@@ -183,6 +208,7 @@ final class Popup {
 
     private void drawItem(Canvas canvas, PopupItem item) {
         paint.setColor(item.color);
+        paint.setAlpha((int) (255f * opacity));
         paint.setTextSize(itemValueTextSize);
         canvas.drawText(item.value, item.valueLeft, item.valueTop, paint);
 

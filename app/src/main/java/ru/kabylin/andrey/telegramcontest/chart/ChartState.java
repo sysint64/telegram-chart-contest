@@ -1,10 +1,12 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
+import android.graphics.Color;
 import android.graphics.Rect;
+import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 // TODO: Encapsulation
@@ -13,23 +15,30 @@ public final class ChartState {
     int minimapPreviewRight = minimapPreviewLeft + 100;
     int minimapPreviewResizeAreaSize = 20;
     Rect minimapRect = null;
+    Rect previewRect = null;
     boolean isInitPreviewMaxY = false;
     float statePreviewMaxY = 0f;
     float previewMaxY = 0f;
+
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
     float minimapMaxYChangeSpeed = 150f;
     float axisXOpacityChangeSpeed = 50f;
     float axisYOpacityChangeSpeed = 150f;
     float axisYOffsetChangeSpeed = 150f;
+    float popupOpacityChangeSpeed = 150f;
+
     float axisXDistance = MeasureUtils.convertDpToPixel(240);
     float axisXOffsetY = MeasureUtils.convertDpToPixel(20);
     float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
     float axisYTextOffsetY = MeasureUtils.convertDpToPixel(5);
     float axisYTopPadding = MeasureUtils.convertDpToPixel(40);
-    float minAxisXDelta = MeasureUtils.convertDpToPixel(10);
+    float minAxisYDelta = MeasureUtils.convertDpToPixel(10);
+    float intersectPointSize = MeasureUtils.convertDpToPixel(4);
+    float intersectPointStrokeWidth = MeasureUtils.convertDpToPixel(2);
 
     List<ChartData> charts = new ArrayList<>();
+    List<Vertex> popupIntersectPoints = new ArrayList<>();
 
     final List<AxisVertex> xAxis = new ArrayList<>();
 
@@ -79,12 +88,16 @@ public final class ChartState {
         }
 
         final ChartData chart = new ChartData(name, color);
+        final int parsedColor = Color.parseColor(color);
 
         for (int i = 0; i < xValues.size(); ++i) {
-            chart.originalData.add(new Vertex(xValues.get(i), y.get(i)));
-            chart.minimapPointsPool.add(new Vertex(0, 0));
-            chart.previewPointsPool.add(new Vertex(0, 0));
-            chart.minimapInnerPreviewPool.add(new Vertex(0, 0));
+            final String yValue = y.get(i).toString();
+            final String xValue = DateUtils.humanizeDate(new Date(xValues.get(i)));
+
+            chart.originalData.add(new Vertex(xValues.get(i), y.get(i), name, xValue, yValue, parsedColor));
+            chart.minimapPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
+            chart.previewPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
+            chart.minimapInnerPreviewPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
         }
 
         charts.add(chart);

@@ -55,12 +55,15 @@ public final class ChartView extends View {
 
         drawMinimap(canvas);
         drawMinimapPreview(canvas);
-
+        drawPopupUnderLine(canvas);
         drawAxisYGrid(canvas);
         drawPreview(canvas);
+        drawIntersectPoints(canvas);
         drawAxisX(canvas);
         drawAxisYLabels(canvas);
-//        drawPopup(canvas);
+
+        final ChartState state = chartSolver.getState();
+        state.popup.draw(canvas, state.previewRect);
 
         chartSolver.onProgress();
         invalidate();
@@ -80,7 +83,7 @@ public final class ChartView extends View {
         paint.setStrokeWidth(1);
 
         for (final ChartData chart : state.charts) {
-            paint.setColor(Color.parseColor(chart.color));
+            paint.setColor(chart.color);
             paint.setAlpha((int) (chart.opacity * 255f));
             drawPath(canvas, chart.minimapPoints);
         }
@@ -140,7 +143,7 @@ public final class ChartView extends View {
         paint.setStrokeWidth(3);
 
         for (final ChartData chart : state.charts) {
-            paint.setColor(Color.parseColor(chart.color));
+            paint.setColor(chart.color);
             paint.setAlpha((int) (chart.opacity * 255f));
             drawPath(canvas, chart.previewPoints);
         }
@@ -216,15 +219,43 @@ public final class ChartView extends View {
         }
     }
 
-    private void drawPopup(Canvas canvas) {
+    private void drawPopupUnderLine(Canvas canvas) {
         final ChartState state = chartSolver.getState();
+
+        if (!state.popup.isVisible) {
+            return;
+        }
 
         paint.setStrokeWidth(MeasureUtils.convertDpToPixel(1));
         paint.setColor(Color.parseColor("#cccccc"));
 
         canvas.drawLine(state.popup.left, previewRect.top, state.popup.left, previewRect.bottom, paint);
+    }
 
-        state.popup.draw(canvas);
+    private void drawIntersectPoints(Canvas canvas) {
+        final ChartState state = chartSolver.getState();
+
+        if (!state.popup.isVisible) {
+            return;
+        }
+
+        for (int i = 0; i < state.charts.size(); ++i) {
+            final ChartData chart = state.charts.get(i);
+            final Vertex vertex = state.popupIntersectPoints.get(i);
+
+            if (chart.isVisible) {
+                paint.setColor(Color.WHITE);
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(vertex.x, vertex.y, state.intersectPointSize, paint);
+
+                paint.setColor(chart.color);
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(state.intersectPointStrokeWidth);
+                canvas.drawCircle(vertex.x, vertex.y, state.intersectPointSize, paint);
+            }
+        }
+
+        paint.setStyle(Paint.Style.FILL);
     }
 
     @Override

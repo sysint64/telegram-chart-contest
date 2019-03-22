@@ -21,9 +21,11 @@ public class ChartSolverImpl implements ChartSolver {
         fillAxisPoints(this.chartState.xValues);
 
         previewOriginalPoints.clear();
+        chartState.popupIntersectPoints.clear();
 
-        for (final ChartData chartData : chartState.charts) {
+        for (final ChartData chart : chartState.charts) {
             previewOriginalPoints.add(new ArrayList<Vertex>());
+            chartState.popupIntersectPoints.add(new Vertex());
         }
     }
 
@@ -80,6 +82,7 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculatePreviewPoints(Rect rect) {
+        chartState.previewRect = rect;
         subCharts.clear();
 
         for (int i = 0; i < chartState.charts.size(); ++i) {
@@ -119,6 +122,10 @@ public class ChartSolverImpl implements ChartSolver {
             final Vertex previewPoint = chartData.previewPointsPool.get(i);
 
             projectVertex(point, previewPoint, rect, x0, y0, xLast, yMax);
+
+            previewPoint.xValue = point.xValue;
+            previewPoint.yValue = point.yValue;
+
             chartData.previewPoints.add(previewPoint);
         }
     }
@@ -317,6 +324,13 @@ public class ChartSolverImpl implements ChartSolver {
             );
         }
 
+        chartState.popup.opacity = MathUtils.interpTo(
+                chartState.popup.opacity,
+                chartState.popup.stateOpacity,
+                deltaTime,
+                chartState.popupOpacityChangeSpeed
+        );
+
         lastTime = time;
     }
 
@@ -453,7 +467,7 @@ public class ChartSolverImpl implements ChartSolver {
         if (Math.floor(chartState.lastStatePreviewMaxY) != Math.floor(chartState.statePreviewMaxY)) {
             float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((chartState.lastStatePreviewMaxY - chartState.statePreviewMaxY) / Math.max(chartState.lastStatePreviewMaxY, chartState.statePreviewMaxY));
 
-            if (Math.abs(deltaMaxY) < chartState.minAxisXDelta) {
+            if (Math.abs(deltaMaxY) < chartState.minAxisYDelta) {
                 deltaMaxY = 0;
             }
 
@@ -515,5 +529,53 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.previewAxisY.add(chartState.previewAxisYZero);
         chartState.previewAxisY.addAll(chartState.yAxisCurrent);
         chartState.previewAxisY.addAll(chartState.yAxisPast);
+    }
+
+    @Override
+    public void dropPopup(float touchX, float touchY) {
+        final List<Popup.PopupItem> items = new ArrayList<>();
+        long x = 0;
+        String title = "";
+
+        for (int i = 0; i < chartState.charts.size(); ++i) {
+            final ChartData chart = chartState.charts.get(i);
+
+            if (chart.isVisible) {
+                final Vertex vertex = findVertexUnderTouch(chart.previewPoints, touchX, touchY);
+
+                if (vertex != null) {
+                    items.add(new Popup.PopupItem(vertex.color, vertex.yValue, vertex.title));
+                    x = vertex.x;
+                    title = vertex.xValue;
+
+                    Vertex intersectPoint = chartState.popupIntersectPoints.get(i);
+
+                    intersectPoint.x = vertex.x;
+                    intersectPoint.y = vertex.y;
+                }
+                else {
+                    return;
+                }
+            }
+        }
+
+        chartState.popup.drop(title, x, 0, items);
+    }
+
+    private Vertex findVertexUnderTouch(List<Vertex> points, float touchX, float touchY) {
+        for (final Vertex vertex : points) {
+            final int halfRangeSize = (int) Math.ceil((float) chartState.previewRect.width() / (float) points.size() / 2f);
+
+            if (touchX >= vertex.x - halfRangeSize && touchX <= vertex.x + halfRangeSize) {
+                return vertex;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void hidePopup() {
+        chartState.popup.hide();
     }
 }
