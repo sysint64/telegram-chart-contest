@@ -4,6 +4,8 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
+
 class ChartUserInteractorImpl implements ChartUserInteractor {
     enum State {
         NONE,
@@ -23,9 +25,14 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
     private float onActionDownMinimapPreviewRight = 0;
 
     private Vertex pointUnderMouse = new Vertex();
+    private ChartViewLayoutManager layoutManager = null;
 
     ChartUserInteractorImpl(ChartSolver chartSolver) {
         this.chartSolver = chartSolver;
+    }
+
+    public void setChartViewLayoutManager(ChartViewLayoutManager layoutManager) {
+        this.layoutManager = layoutManager;
     }
 
     @Override
@@ -33,7 +40,11 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         final float touchX = event.getX();
         final float touchY = event.getY();
 
-        boolean result = true;
+        if (!chartSolver.getState().isInit) {
+            return false;
+        }
+
+        boolean result = false;
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -44,12 +55,19 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
             case MotionEvent.ACTION_CANCEL:
                 state = State.NONE;
                 chartSolver.hidePopup();
-                result = true;
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 result = onTouchMove(touchX, touchY);
                 break;
+        }
+
+        if (layoutManager != null) {
+            if (result) {
+                layoutManager.setScrollEnabled(false);
+            } else {
+                layoutManager.setScrollEnabled(true);
+            }
         }
 
         return result;

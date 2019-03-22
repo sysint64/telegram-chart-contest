@@ -12,7 +12,7 @@ import ru.kabylin.andrey.telegramcontest.chart.ChartState;
 import ru.kabylin.andrey.telegramcontest.chart.ChartView;
 import ru.kabylin.andrey.telegramcontest.views.RecyclerItemHolder;
 
-public class ChartHolder extends RecyclerItemHolder<ChartState> implements View.OnClickListener {
+public class ChartHolder extends RecyclerItemHolder<ChartRecyclerItem> implements View.OnClickListener {
     private final ChartView chartView;
     private final AppCompatCheckBox[] checkBoxes = new AppCompatCheckBox[5];
     private final View[] hrs = new View[4];
@@ -37,11 +37,14 @@ public class ChartHolder extends RecyclerItemHolder<ChartState> implements View.
     }
 
     @Override
-    public void bind(ChartState data) {
-        chartView.setChartState(data);
+    public void bind(ChartRecyclerItem data) {
+        final ChartState state = data.chartState;
 
-        for (int i = 0; i < data.charts.size(); ++i) {
-            final ChartData chart = data.charts.get(i);
+        chartView.setChartState(state);
+        chartView.setLayoutManager(data.layoutManager);
+
+        for (int i = 0; i < state.charts.size(); ++i) {
+            final ChartData chart = state.charts.get(i);
             checkBoxes[i].setText(chart.name);
             checkBoxes[i].setVisibility(View.VISIBLE);
             checkBoxes[i].setChecked(chart.isVisible);
@@ -51,14 +54,14 @@ public class ChartHolder extends RecyclerItemHolder<ChartState> implements View.
                 DrawableCompat.setTint(checkBoxes[i].getButtonDrawable(), chart.color);
             }
 
-            if (i != data.charts.size() - 1) {
+            if (i != state.charts.size() - 1) {
                 hrs[i].setVisibility(View.VISIBLE);
             } else {
                 hrs[i].setVisibility(View.GONE);
             }
         }
 
-        for (int i = data.charts.size(); i < 5; ++i) {
+        for (int i = state.charts.size(); i < 5; ++i) {
             checkBoxes[i].setVisibility(View.GONE);
 
             if (i < 4) {

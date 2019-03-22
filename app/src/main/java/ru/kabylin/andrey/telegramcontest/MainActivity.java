@@ -3,15 +3,12 @@ package ru.kabylin.andrey.telegramcontest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 
 import org.json.JSONArray;
@@ -27,10 +24,12 @@ import ru.kabylin.andrey.telegramcontest.views.SingleItemRecyclerAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements HolderFactory<ChartState> {
+public class MainActivity extends AppCompatActivity implements HolderFactory<ChartRecyclerItem> {
     private boolean nightMode = false;
-    private ArrayList<ChartState> charts = new ArrayList<>();
+    private ArrayList<ChartRecyclerItem> charts = new ArrayList<>();
+    private ArrayList<ChartState> chartsStates = new ArrayList<>();
     private RecyclerView recyclerView;
+    private ChartViewLayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +41,11 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
         setTheme(nightMode ? R.style.AppNightTheme : R.style.AppTheme);
         setContentView(R.layout.activity_main);
 
+        layoutManager = new ChartViewLayoutManager(this);
+
         if (savedInstanceState != null && savedInstanceState.containsKey("charts")) {
-            charts = savedInstanceState.getParcelableArrayList("charts");
+            chartsStates = savedInstanceState.getParcelableArrayList("charts");
+            fillCharts();
         } else {
             loadCharts();
         }
@@ -60,18 +62,25 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
             for (int i = 0; i < jsonArray.length(); ++i) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 final ChartState chartState = ChartJsonLoader.loadCharts(jsonObject);
-                charts.add(chartState);
+                chartsStates.add(chartState);
             }
+
+            fillCharts();
         } catch (IOException | JSONException e) {
             Log.e("MainActivity", "JSON LOAD ERROR");
         }
     }
 
+    private void fillCharts() {
+        for (ChartState chartState : chartsStates) {
+            charts.add(new ChartRecyclerItem(layoutManager, chartState));
+        }
+    }
+
     private void initRecyclerView() {
         recyclerView = findViewById(R.id.recyclerView);
-        final ChartViewLayoutManager layoutManager = new ChartViewLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        SingleItemRecyclerAdapter<ChartState> recyclerAdapter = new SingleItemRecyclerAdapter<>(this, charts, R.layout.item_chart, this);
+        SingleItemRecyclerAdapter<ChartRecyclerItem> recyclerAdapter = new SingleItemRecyclerAdapter<>(this, charts, R.layout.item_chart, this);
         recyclerView.setAdapter(recyclerAdapter);
     }
 
@@ -101,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
     }
 
     @Override
-    public RecyclerItemHolder<ChartState> create(Context context, View view) {
+    public RecyclerItemHolder<ChartRecyclerItem> create(Context context, View view) {
         return new ChartHolder(context, view);
     }
 
@@ -109,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("charts", charts);
+        outState.putParcelableArrayList("charts", chartsStates);
         outState.putFloat("scroll", recyclerView.getScrollY());
     }
 }

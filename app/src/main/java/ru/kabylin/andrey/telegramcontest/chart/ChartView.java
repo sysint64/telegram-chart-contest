@@ -11,6 +11,8 @@ import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
@@ -338,5 +340,9 @@ public final class ChartView extends View {
 
     public boolean setChartVisibilityByName(final String name, final boolean visibility) {
         return chartSolver.setChartVisibilityByName(name, visibility);
+    }
+
+    public void setLayoutManager(ChartViewLayoutManager layoutManager) {
+        userInteractor.setChartViewLayoutManager(layoutManager);
     }
 }
