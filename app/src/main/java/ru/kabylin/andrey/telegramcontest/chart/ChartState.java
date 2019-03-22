@@ -33,6 +33,10 @@ public final class ChartState {
     float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
     float axisYTextOffsetY = MeasureUtils.convertDpToPixel(5);
     float axisYTopPadding = MeasureUtils.convertDpToPixel(40);
+
+    boolean axisXIsInit = false;
+    boolean axisYIsInit = false;
+
     float minAxisYDelta = MeasureUtils.convertDpToPixel(10);
     float intersectPointSize = MeasureUtils.convertDpToPixel(4);
     float intersectPointStrokeWidth = MeasureUtils.convertDpToPixel(2);

@@ -364,6 +364,8 @@ public class ChartSolverImpl implements ChartSolver {
         projectAxisXVertex(rect, vertices, vertices.size() - 1, 1f);
 
         fallThroughAxisX(rect, vertices, 0, vertices.size() - 1);
+
+        chartState.axisXIsInit = true;
     }
 
     private void fallThroughAxisX(Rect rect, List<AxisVertex> vertices, int left, int right) {
@@ -405,6 +407,12 @@ public class ChartSolverImpl implements ChartSolver {
     private void projectAxisXVertex(Rect rect, AxisVertex vertex, int index, float stateOpacity) {
         AxisVertex previewVertex = chartState.previewAxisXPool.get(index);
 
+        vertex.original.stateOpacity = stateOpacity;
+
+        if (!chartState.axisXIsInit) {
+            vertex.original.opacity = stateOpacity;
+        }
+
         previewVertex.x = (int) projectValueAxisXVertex(rect, vertex);
         previewVertex.y = (int) (rect.bottom + chartState.axisXOffsetY);
         previewVertex.title = vertex.title;
@@ -412,7 +420,6 @@ public class ChartSolverImpl implements ChartSolver {
         previewVertex.opacity = vertex.opacity;
         previewVertex.original = vertex.original;
 
-        vertex.original.stateOpacity = stateOpacity;
         chartState.previewAxisX.add(previewVertex);
     }
 
@@ -478,15 +485,22 @@ public class ChartSolverImpl implements ChartSolver {
                 vertex.x = current.x;
                 vertex.y = current.y;
 
-                if (vertex.opacity < 0.1f) {
-                    vertex.yOffset = 0f;
-                    vertex.stateYOffset = -deltaMaxY;
-                    vertex.title = current.title;
+                if (chartState.axisYIsInit) {
+                    if (vertex.opacity < 0.1f) {
+                        vertex.yOffset = 0f;
+                        vertex.stateYOffset = -deltaMaxY;
+                        vertex.title = current.title;
 
-                    vertex.opacity = 1f;
-                    vertex.stateOpacity = 0f;
+                        vertex.opacity = 1f;
+                        vertex.stateOpacity = 0f;
+                    } else {
+                        vertex.stateYOffset -= deltaMaxY;
+                    }
                 } else {
-                    vertex.stateYOffset -= deltaMaxY;
+                    vertex.yOffset = 0f;
+                    vertex.stateYOffset = 0f;
+                    vertex.opacity = 0f;
+                    vertex.stateOpacity = 0f;
                 }
             }
 
@@ -500,20 +514,29 @@ public class ChartSolverImpl implements ChartSolver {
                 current -= delta;
                 currentValue += deltaValue;
 
-                if (vertex.opacity > 0.9f) {
-                    vertex.yOffset = deltaMaxY;
-                    vertex.stateYOffset = 0f;
-                } else {
-                    vertex.yOffset += deltaMaxY;
-                }
+                if (chartState.axisYIsInit) {
+                    if (vertex.opacity > 0.9f) {
+                        vertex.yOffset = deltaMaxY;
+                        vertex.stateYOffset = 0f;
+                    } else {
+                        vertex.yOffset += deltaMaxY;
+                    }
 
-                vertex.opacity = 0f;
-                vertex.stateOpacity = 1f;
+                    vertex.opacity = 0f;
+                    vertex.stateOpacity = 1f;
+                } else {
+                    vertex.yOffset = 0f;
+                    vertex.stateYOffset = 0f;
+                    vertex.opacity = 1f;
+                    vertex.stateOpacity = 1f;
+                }
 
                 vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
                 vertex.y = current;
                 vertex.title = String.valueOf(currentValue);
             }
+
+            chartState.axisYIsInit = true;
         }
 
         chartState.lastStatePreviewMaxY = chartState.statePreviewMaxY;

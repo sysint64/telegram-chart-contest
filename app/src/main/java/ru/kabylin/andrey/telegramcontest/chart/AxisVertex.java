@@ -7,8 +7,8 @@ final class AxisVertex {
     long y;
     String title;
     Paint.Align textAlign = Paint.Align.CENTER;
-    float stateOpacity = 0f;
-    float opacity = 0f;
+    float stateOpacity = 1f;
+    float opacity = 1f;
 
     float stateYOffset = 0f;
     float yOffset = 0f;
