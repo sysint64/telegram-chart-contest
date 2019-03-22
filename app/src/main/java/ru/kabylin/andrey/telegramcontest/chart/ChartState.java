@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
-import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
+import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.util.ArrayList;
@@ -148,7 +148,7 @@ public final class ChartState implements Parcelable {
 
         for (int i = 0; i < xValues.size(); ++i) {
             final String yValue = y.get(i).toString();
-            final String xValue = DateUtils.humanizeDate(new Date(xValues.get(i)));
+            final String xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true);
 
             chart.originalData.add(new Vertex(xValues.get(i), y.get(i), name, xValue, yValue, parsedColor));
             chart.minimapPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));

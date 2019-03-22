@@ -181,11 +181,11 @@ final class Popup {
         paint.setStyle(Paint.Style.FILL);
 
         paint.setColor(Color.BLACK);
-        paint.setAlpha((int) (20f * opacity));
+        paint.setAlpha((int) (10f * opacity));
         canvas.drawRoundRect(shadowRectLevel1, radius, radius, paint);
 
         paint.setColor(Color.BLACK);
-        paint.setAlpha((int) (20f * opacity));
+        paint.setAlpha((int) (10f * opacity));
         canvas.drawRoundRect(shadowRectLevel2, radius, radius, paint);
 
         paint.setColor(chartColorPopupColor);

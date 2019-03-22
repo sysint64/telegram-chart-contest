@@ -2,7 +2,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Paint;
 import android.graphics.Rect;
-import ru.kabylin.andrey.telegramcontest.helpers.DateUtils;
+import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class ChartSolverImpl implements ChartSolver {
         long x = x0;
 
         for (int i = 0; i < count; ++i) {
-            final String title = DateUtils.humanizeDate(new Date(x)).split(",")[0];
+            final String title = DateHelper.humanizeDate(new Date(x), false);
 
             chartState.xAxis.add(new AxisVertex(x, 0, title));
             chartState.axisXPool.add(new AxisVertex(x, 0, title));
