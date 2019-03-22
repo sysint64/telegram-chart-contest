@@ -11,22 +11,26 @@
     <color name="lightThemeChartGrid">#f1f1f2</color>
     <color name="lightThemeChartPopup">#f1f1f2</color>
     <color name="lightThemeChartPopupLine">#e5ebef</color>
+    <color name="lightThemeChartPopupTitle">#222222</color>
     <color name="lightThemeChartMinimapOverlay">#B3E5EBEF</color>
     <color name="lightThemeChartMinimapBorder">#4D3896D4</color>
+    <color name="lightThemeChartBackground">#ffffff</color>
     <color name="lightThemeHr">#e0e0e0</color>
 
     <!-- Night theme -->
     <color name="nightThemeColorPrimary">#212d3b</color>
     <color name="nightThemeColorPrimaryDark">#1a242e</color>
     <color name="nightThemeColorAccent">#ffffff</color>
-    <color name="nightThemeBackground">#f0f0f0</color>
+    <color name="nightThemeBackground">#151e27</color>
     <color name="nightThemeChartAxisText">#506372</color>
     <color name="nightThemeCardBackground">#1d2733</color>
     <color name="nightThemeTitleText">#7bc4fb</color>
     <color name="nightThemeChartGrid">#161f2b</color>
     <color name="nightThemeChartPopup">#202b38</color>
+    <color name="nightThemeChartPopupTitle">#e5eff5</color>
     <color name="nightThemeChartPopupLine">#131c26</color>
     <color name="nightThemeChartMinimapOverlay">#E619232E</color>
     <color name="nightThemeChartMinimapBorder">#127BC4FB</color>
-    <color name="nightThemeHr">#000000</color>
+    <color name="nightThemeChartBackground">#1d2733</color>
+    <color name="nightThemeHr">#0b131e</color>
 </resources>

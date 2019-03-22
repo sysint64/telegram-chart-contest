@@ -1,18 +1,34 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/lightThemeColorPrimary</item>
         <item name="colorPrimaryDark">@color/lightThemeColorPrimaryDark</item>
         <item name="colorAccent">@color/lightThemeColorAccent</item>
+        <item name="activityBackground">@color/lightThemeBackground</item>
+        <item name="cardBackground">@color/lightThemeCardBackground</item>
+        <item name="chartAxisTextColor">@color/lightThemeChartAxisText</item>
+        <item name="chartGridColor">@color/lightThemeChartGrid</item>
+        <item name="chartPopupColor">@color/lightThemeChartPopup</item>
+        <item name="chartPopupTitleColor">@color/lightThemeChartPopupTitle</item>
+        <item name="chartPopupLineColor">@color/lightThemeChartPopupLine</item>
+        <item name="chartMinimapOverlayColor">@color/lightThemeChartMinimapOverlay</item>
+        <item name="chartMinimapBorderColor">@color/lightThemeChartMinimapBorder</item>
+        <item name="chartBackgroundColor">@color/lightThemeChartBackground</item>
     </style>
 
     <style name="AppNightTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/nightThemeColorPrimary</item>
         <item name="colorPrimaryDark">@color/nightThemeColorPrimaryDark</item>
         <item name="colorAccent">@color/nightThemeColorAccent</item>
+        <item name="activityBackground">@color/nightThemeBackground</item>
+        <item name="cardBackground">@color/nightThemeCardBackground</item>
+        <item name="chartAxisTextColor">@color/nightThemeChartAxisText</item>
+        <item name="chartGridColor">@color/nightThemeChartGrid</item>
+        <item name="chartPopupColor">@color/nightThemeChartPopup</item>
+        <item name="chartPopupTitleColor">@color/nightThemeChartPopupTitle</item>
+        <item name="chartPopupLineColor">@color/nightThemeChartPopupLine</item>
+        <item name="chartMinimapOverlayColor">@color/nightThemeChartMinimapOverlay</item>
+        <item name="chartMinimapBorderColor">@color/nightThemeChartMinimapBorder</item>
+        <item name="chartBackgroundColor">@color/nightThemeChartBackground</item>
     </style>
-
 </resources>

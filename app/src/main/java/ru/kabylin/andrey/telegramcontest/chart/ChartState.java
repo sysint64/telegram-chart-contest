@@ -12,9 +12,11 @@ import java.util.Date;
 import java.util.List;
 
 public final class ChartState implements Parcelable {
-    int minimapPreviewLeft = 100;
-    int minimapPreviewRight = minimapPreviewLeft + 100;
-    int minimapPreviewResizeAreaSize = 20;
+    int minimapPreviewLeft = 0;
+    int minimapPreviewRight = (int) MeasureUtils.convertDpToPixel(80);
+    int minimapPreviewRenderResizeAreaSize = (int) MeasureUtils.convertDpToPixel(8);
+    int minimapPreviewResizeAreaSize = (int) MeasureUtils.convertDpToPixel(20);
+    int minimapPreviewBorderHeight = (int) MeasureUtils.convertDpToPixel(2);
     Rect minimapRect = null;
     Rect previewRect = null;
     boolean isInitPreviewMaxY = false;
@@ -71,10 +73,12 @@ public final class ChartState implements Parcelable {
     public ChartState() {
     }
 
-    protected ChartState(Parcel in) {
+    public ChartState(Parcel in) {
         minimapPreviewLeft = in.readInt();
         minimapPreviewRight = in.readInt();
+        minimapPreviewRenderResizeAreaSize = in.readInt();
         minimapPreviewResizeAreaSize = in.readInt();
+        minimapPreviewBorderHeight = in.readInt();
         minimapRect = in.readParcelable(Rect.class.getClassLoader());
         previewRect = in.readParcelable(Rect.class.getClassLoader());
         isInitPreviewMaxY = in.readByte() != 0;
@@ -164,7 +168,9 @@ public final class ChartState implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(minimapPreviewLeft);
         dest.writeInt(minimapPreviewRight);
+        dest.writeInt(minimapPreviewRenderResizeAreaSize);
         dest.writeInt(minimapPreviewResizeAreaSize);
+        dest.writeInt(minimapPreviewBorderHeight);
         dest.writeParcelable(minimapRect, flags);
         dest.writeParcelable(previewRect, flags);
         dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));

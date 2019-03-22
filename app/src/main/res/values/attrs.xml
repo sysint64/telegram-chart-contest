@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="activity_background" format="color" />
+    <attr name="activityBackground" format="reference"/>
+    <attr name="cardBackground" format="reference"/>
+
+    <declare-styleable name="ChartView">
+        <attr name="chartAxisTextColor" format="reference"/>
+        <attr name="chartGridColor" format="reference"/>
+        <attr name="chartPopupColor" format="reference"/>
+        <attr name="chartPopupTitleColor" format="reference"/>
+        <attr name="chartPopupLineColor" format="reference"/>
+        <attr name="chartMinimapOverlayColor" format="reference"/>
+        <attr name="chartMinimapBorderColor" format="reference"/>
+        <attr name="chartBackgroundColor" format="reference"/>
+    </declare-styleable>
 </resources>

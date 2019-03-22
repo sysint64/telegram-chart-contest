@@ -70,6 +70,9 @@ final class Popup {
     private final float itemTitleTopMargin = MeasureUtils.convertDpToPixel(4);
     private final float itemRightMargin = MeasureUtils.convertDpToPixel(16);
 
+    int chartColorPopupColor = Color.WHITE;
+    int chartColorPopupTitleColor = Color.BLACK;
+
     void draw(Canvas canvas, Rect rect) {
         measure(rect, MeasureUtils.convertDpToPixel(20));
 
@@ -177,15 +180,15 @@ final class Popup {
     private void drawBackground(Canvas canvas) {
         paint.setStyle(Paint.Style.FILL);
 
-        paint.setColor(Color.parseColor("#dbdbdb"));
-        paint.setAlpha((int) (80f * opacity));
+        paint.setColor(Color.BLACK);
+        paint.setAlpha((int) (20f * opacity));
         canvas.drawRoundRect(shadowRectLevel1, radius, radius, paint);
 
-        paint.setColor(Color.parseColor("#cccccc"));
-        paint.setAlpha((int) (80f * opacity));
+        paint.setColor(Color.BLACK);
+        paint.setAlpha((int) (20f * opacity));
         canvas.drawRoundRect(shadowRectLevel2, radius, radius, paint);
 
-        paint.setColor(Color.parseColor("#ffffff"));
+        paint.setColor(chartColorPopupColor);
         paint.setAlpha((int) (255f * opacity));
         canvas.drawRoundRect(popupRect, radius, radius, paint);
 
@@ -193,7 +196,7 @@ final class Popup {
     }
 
     private void drawTitle(Canvas canvas) {
-        paint.setColor(Color.BLACK);
+        paint.setColor(chartColorPopupTitleColor);
         paint.setAlpha((int) (255f * opacity));
         paint.setTextSize(titleTextSize);
 

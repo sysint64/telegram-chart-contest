@@ -8,8 +8,8 @@ import ru.kabylin.andrey.telegramcontest.chart.ChartState;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ChartJsonLoader {
-    public static ChartState loadCharts(JSONObject jsonObject) throws JSONException {
+final class ChartJsonLoader {
+    static ChartState loadCharts(JSONObject jsonObject) throws JSONException {
         final ChartState chartState = new ChartState();
         final JSONArray columns = jsonObject.getJSONArray("columns");
 
