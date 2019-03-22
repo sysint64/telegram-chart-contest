@@ -44,7 +44,7 @@ public final class ChartState implements Parcelable {
     float intersectPointSize = MeasureUtils.convertDpToPixel(4);
     float intersectPointStrokeWidth = MeasureUtils.convertDpToPixel(2);
 
-    List<ChartData> charts = new ArrayList<>();
+    public List<ChartData> charts = new ArrayList<>();
     List<Vertex> popupIntersectPoints = new ArrayList<>();
 
     final List<AxisVertex> xAxis = new ArrayList<>();

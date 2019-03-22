@@ -1,43 +1,40 @@
 package ru.kabylin.andrey.telegramcontest;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatCheckBox;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.CheckBox;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import ru.kabylin.andrey.telegramcontest.chart.ChartState;
-import ru.kabylin.andrey.telegramcontest.chart.ChartView;
+import ru.kabylin.andrey.telegramcontest.helpers.JsonUtils;
+import ru.kabylin.andrey.telegramcontest.views.HolderFactory;
+import ru.kabylin.andrey.telegramcontest.views.RecyclerItemHolder;
+import ru.kabylin.andrey.telegramcontest.views.SingleItemRecyclerAdapter;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private ChartView chartView = null;
-    private CheckBox checkBox0 = null;
-    private CheckBox checkBox1 = null;
-
+public class MainActivity extends AppCompatActivity implements HolderFactory<ChartState> {
     private boolean nightMode = false;
-    public ChartState chartState = null;
+    private ArrayList<ChartState> charts = new ArrayList<>();
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null && savedInstanceState.containsKey("chartState")) {
-            chartState = savedInstanceState.getParcelable("chartState");
-        }
 
         final SharedPreferences preferences = getSharedPreferences("theme", MODE_PRIVATE);
         nightMode = preferences.getBoolean("night_mode", false);
@@ -45,55 +42,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setTheme(nightMode ? R.style.AppNightTheme : R.style.AppTheme);
         setContentView(R.layout.activity_main);
 
-        chartView = findViewById(R.id.chartView);
-        checkBox0 = findViewById(R.id.checkBox0);
-        checkBox1 = findViewById(R.id.checkBox1);
-
-        checkBox0.setOnClickListener(this);
-        checkBox1.setOnClickListener(this);
-
-        if (chartState == null) {
-            try {
-                final String json = readJson();
-
-                JSONArray jsonArray = new JSONArray(json);
-                JSONObject jsonObject = jsonArray.getJSONObject(1);
-
-                chartState = ChartJsonLoader.loadCharts(jsonObject);
-                chartView.setChartState(chartState);
-            } catch (IOException | JSONException e) {
-                Log.e("ChartView", "JSON LOAD ERROR");
-            }
+        if (savedInstanceState != null && savedInstanceState.containsKey("charts")) {
+            charts = savedInstanceState.getParcelableArrayList("charts");
         } else {
-            chartView.setChartState(chartState);
+            loadCharts();
+        }
+
+        initRecyclerView();
+    }
+
+    private void loadCharts() {
+        try {
+            final String json = JsonUtils.readResourceJson(getResources(), R.raw.chart_data);
+
+            JSONArray jsonArray = new JSONArray(json);
+
+            for (int i = 0; i < jsonArray.length(); ++i) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                final ChartState chartState = ChartJsonLoader.loadCharts(jsonObject);
+                charts.add(chartState);
+            }
+        } catch (IOException | JSONException e) {
+            Log.e("MainActivity", "JSON LOAD ERROR");
         }
     }
 
-
-    private String readJson() throws IOException {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.chart_data)));
-        String line = reader.readLine();
-        final StringBuilder json = new StringBuilder();
-
-        while (line != null) {
-            json.append(line);
-            line = reader.readLine();
-        }
-
-        return json.toString();
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.checkBox0:
-                chartView.setChartVisibilityByName("#0", checkBox0.isChecked());
-                break;
-
-            case R.id.checkBox1:
-                chartView.setChartVisibilityByName("#1", checkBox1.isChecked());
-                break;
-        }
+    private void initRecyclerView() {
+        recyclerView = findViewById(R.id.recyclerView);
+        final ChartViewLayoutManager layoutManager = new ChartViewLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        SingleItemRecyclerAdapter<ChartState> recyclerAdapter = new SingleItemRecyclerAdapter<>(this, charts, R.layout.item_chart, this);
+        recyclerView.setAdapter(recyclerAdapter);
     }
 
     @Override
@@ -122,11 +101,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public RecyclerItemHolder<ChartState> create(Context context, View view) {
+        return new ChartHolder(context, view);
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        if (chartState != null) {
-            outState.putParcelable("chartState", chartState);
-        }
+        outState.putParcelableArrayList("charts", charts);
+        outState.putFloat("scroll", recyclerView.getScrollY());
     }
 }

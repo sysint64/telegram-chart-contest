@@ -14,6 +14,8 @@
         <item name="chartMinimapOverlayColor">@color/lightThemeChartMinimapOverlay</item>
         <item name="chartMinimapBorderColor">@color/lightThemeChartMinimapBorder</item>
         <item name="chartBackgroundColor">@color/lightThemeChartBackground</item>
+        <item name="regularTextColor">@color/lightThemeRegularTextColor</item>
+        <item name="hrColor">@color/lightThemeHr</item>
     </style>
 
     <style name="AppNightTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -30,5 +32,7 @@
         <item name="chartMinimapOverlayColor">@color/nightThemeChartMinimapOverlay</item>
         <item name="chartMinimapBorderColor">@color/nightThemeChartMinimapBorder</item>
         <item name="chartBackgroundColor">@color/nightThemeChartBackground</item>
+        <item name="regularTextColor">@color/nightThemeRegularTextColor</item>
+        <item name="hrColor">@color/nightThemeHr</item>
     </style>
 </resources>

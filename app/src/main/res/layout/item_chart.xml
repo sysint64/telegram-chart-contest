@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/cardBackground"
+    android:elevation="3dp"
+    tools:context=".MainActivity"
+    tools:targetApi="lollipop">
+
+    <include
+        android:id="@+id/checkbox5"
+        layout="@layout/widget_checkbox_custom_check_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr4" />
+
+    <include
+        android:id="@+id/checkbox2"
+        layout="@layout/widget_checkbox_custom_check_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr1" />
+
+    <include
+        android:id="@+id/checkbox3"
+        layout="@layout/widget_checkbox_custom_check_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr2" />
+
+    <include
+        android:id="@+id/checkbox4"
+        layout="@layout/widget_checkbox_custom_check_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hr3" />
+
+    <ru.kabylin.andrey.telegramcontest.chart.ChartView
+        android:id="@+id/chartView"
+        android:layout_width="0dp"
+        android:layout_height="400dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/checkbox1"
+        layout="@layout/widget_checkbox_custom_check_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chartView" />
+
+    <View
+        android:id="@+id/hr1"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/hrColor"
+        app:layout_constraintEnd_toEndOf="@+id/checkbox1"
+        app:layout_constraintStart_toStartOf="@+id/checkbox1"
+        app:layout_constraintTop_toBottomOf="@+id/checkbox1" />
+
+    <View
+        android:id="@+id/hr2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/hrColor"
+        app:layout_constraintEnd_toEndOf="@+id/checkbox2"
+        app:layout_constraintStart_toStartOf="@+id/checkbox2"
+        app:layout_constraintTop_toBottomOf="@+id/checkbox2" />
+
+    <View
+        android:id="@+id/hr3"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/hrColor"
+        app:layout_constraintEnd_toEndOf="@+id/checkbox3"
+        app:layout_constraintStart_toStartOf="@+id/checkbox3"
+        app:layout_constraintTop_toBottomOf="@+id/checkbox3" />
+
+    <View
+        android:id="@+id/hr4"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:background="?attr/hrColor"
+        app:layout_constraintEnd_toEndOf="@+id/checkbox4"
+        app:layout_constraintStart_toStartOf="@+id/checkbox4"
+        app:layout_constraintTop_toBottomOf="@+id/checkbox4" />
+
+</android.support.constraint.ConstraintLayout>

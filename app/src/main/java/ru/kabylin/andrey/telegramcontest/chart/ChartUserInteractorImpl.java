@@ -4,7 +4,7 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 
-class ChartUserInteractorImpl implements ChartUserInteractor  {
+class ChartUserInteractorImpl implements ChartUserInteractor {
     enum State {
         NONE,
         POPUP_MOVE,
@@ -33,7 +33,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
         final float touchX = event.getX();
         final float touchY = event.getY();
 
-        boolean result = false;
+        boolean result = true;
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -41,8 +41,10 @@ class ChartUserInteractorImpl implements ChartUserInteractor  {
                 break;
 
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 state = State.NONE;
                 chartSolver.hidePopup();
+                result = true;
                 break;
 
             case MotionEvent.ACTION_MOVE:

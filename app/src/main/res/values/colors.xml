@@ -16,6 +16,7 @@
     <color name="lightThemeChartMinimapBorder">#4D3896D4</color>
     <color name="lightThemeChartBackground">#ffffff</color>
     <color name="lightThemeHr">#e0e0e0</color>
+    <color name="lightThemeRegularTextColor">#222222</color>
 
     <!-- Night theme -->
     <color name="nightThemeColorPrimary">#212d3b</color>
@@ -33,4 +34,5 @@
     <color name="nightThemeChartMinimapBorder">#127BC4FB</color>
     <color name="nightThemeChartBackground">#1d2733</color>
     <color name="nightThemeHr">#0b131e</color>
+    <color name="nightThemeRegularTextColor">#ffffff</color>
 </resources>
