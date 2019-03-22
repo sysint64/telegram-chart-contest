@@ -18,7 +18,11 @@ public class ChartSolverImpl implements ChartSolver {
 
     public void setChartState(ChartState chartState) {
         this.chartState = chartState;
-        fillAxisPoints(this.chartState.xValues);
+
+        if (!this.chartState.isInit) {
+            this.chartState.isInit = true;
+            fillAxisPoints(this.chartState.xValues);
+        }
 
         previewOriginalPoints.clear();
         chartState.popupIntersectPoints.clear();

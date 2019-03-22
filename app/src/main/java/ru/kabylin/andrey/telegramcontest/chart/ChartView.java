@@ -174,11 +174,11 @@ public final class ChartView extends View {
         for (final AxisVertex vertex : state.previewAxisX) {
             final int opacity = (int) (vertex.opacity * 255f);
 
-//            if (opacity > 0) {
+            if (opacity > 0) {
                 paint.setTextAlign(vertex.original.textAlign);
                 paint.setAlpha(opacity);
                 canvas.drawText(vertex.title, vertex.x, vertex.y, paint);
-//            }
+            }
         }
     }
 

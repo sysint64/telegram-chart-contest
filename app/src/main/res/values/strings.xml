@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Telegram Contest</string>
+    <string name="toggle_night_mode">Toggle Night Mode</string>
 </resources>

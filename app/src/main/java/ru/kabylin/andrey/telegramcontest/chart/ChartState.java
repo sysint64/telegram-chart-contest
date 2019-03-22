@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// TODO: Encapsulation
 public final class ChartState {
     int minimapPreviewLeft = 100;
     int minimapPreviewRight = minimapPreviewLeft + 100;
@@ -64,6 +63,8 @@ public final class ChartState {
     final List<Long> xValues = new ArrayList<>();
 
     final Popup popup = new Popup();
+
+    boolean isInit = false;
 
     Rect getMinimapPreviewRect() {
         return new Rect(
