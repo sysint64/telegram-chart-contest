@@ -24,11 +24,11 @@ public class ChartHolder extends RecyclerItemHolder<ChartRecyclerItem> implement
 
         chartView = view.findViewById(R.id.chartView);
         titleTextView = view.findViewById(R.id.titleTextView);
-        checkBoxes[0] = view.findViewById(R.id.checkbox1).findViewById(R.id.checkbox);
-        checkBoxes[1] = view.findViewById(R.id.checkbox2).findViewById(R.id.checkbox);
-        checkBoxes[2] = view.findViewById(R.id.checkbox3).findViewById(R.id.checkbox);
-        checkBoxes[3] = view.findViewById(R.id.checkbox4).findViewById(R.id.checkbox);
-        checkBoxes[4] = view.findViewById(R.id.checkbox5).findViewById(R.id.checkbox);
+        checkBoxes[0] = view.findViewById(R.id.checkbox1);
+        checkBoxes[1] = view.findViewById(R.id.checkbox2);
+        checkBoxes[2] = view.findViewById(R.id.checkbox3);
+        checkBoxes[3] = view.findViewById(R.id.checkbox4);
+        checkBoxes[4] = view.findViewById(R.id.checkbox5);
         hrs[0] = view.findViewById(R.id.hr1);
         hrs[1] = view.findViewById(R.id.hr2);
         hrs[2] = view.findViewById(R.id.hr3);
