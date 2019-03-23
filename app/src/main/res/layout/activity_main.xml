@@ -25,7 +25,7 @@
 
         <Button
             android:id="@+id/buttonChart1"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
@@ -38,7 +38,7 @@
 
         <Button
             android:id="@+id/buttonChart2"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
@@ -51,7 +51,7 @@
 
         <Button
             android:id="@+id/buttonChart3"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
@@ -64,7 +64,7 @@
 
         <Button
             android:id="@+id/buttonChart4"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp "
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
@@ -77,7 +77,7 @@
 
         <Button
             android:id="@+id/buttonChart5"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
