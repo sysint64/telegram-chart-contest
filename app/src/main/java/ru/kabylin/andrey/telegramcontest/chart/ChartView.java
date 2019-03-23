@@ -251,7 +251,6 @@ public final class ChartView extends View {
     private void drawAxisYLabels(Canvas canvas) {
         final ChartState state = chartSolver.getState();
 
-        paint.setColor(chartAxisTextColor);
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
 
         for (final AxisVertex vertex : state.previewAxisY) {
@@ -262,6 +261,13 @@ public final class ChartView extends View {
                 paint.setTextAlign(Paint.Align.LEFT);
                 paint.setAlpha(opacity);
 
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setColor(chartBackgroundColor);
+                paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
+                canvas.drawText(vertex.title, vertex.x, y, paint);
+
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(chartAxisTextColor);
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
         }
