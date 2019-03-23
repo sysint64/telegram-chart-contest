@@ -125,8 +125,13 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
                 touchY > previewRect.top && touchY < previewRect.bottom)
         {
             if (multiTouch) {
-                state[0] = State.PREVIEW_RESIZE_LEFT;
-                state[1] = State.PREVIEW_RESIZE_RIGHT;
+                if (onActionDownTouchX[0] > onActionDownTouchX[1]) {
+                    state[0] = State.PREVIEW_RESIZE_LEFT;
+                    state[1] = State.PREVIEW_RESIZE_RIGHT;
+                } else {
+                    state[1] = State.PREVIEW_RESIZE_LEFT;
+                    state[0] = State.PREVIEW_RESIZE_RIGHT;
+                }
                 chartSolver.hidePopup();
             } else {
                 state[id] = State.POPUP_MOVE;
