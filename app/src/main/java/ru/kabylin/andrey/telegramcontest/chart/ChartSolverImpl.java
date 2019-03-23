@@ -57,7 +57,14 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculateMinimapPoints(final Rect rect) {
-        chartState.minimapRect = rect;
+        if (chartState.minimapRect == null) {
+            chartState.minimapRect = rect;
+            // it'll clamp automatically to border
+            setMinimapPosition(9999999);
+        } else {
+            chartState.minimapRect = rect;
+        }
+
         findMaxByYInCharts(chartState.charts);
 
         for (final ChartData chartData : chartState.charts) {
