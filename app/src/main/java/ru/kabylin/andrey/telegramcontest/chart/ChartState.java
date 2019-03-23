@@ -118,12 +118,16 @@ public final class ChartState implements Parcelable {
     };
 
     Rect getMinimapPreviewRect() {
-        return new Rect(
-                minimapPreviewLeft,
-                minimapRect.top,
-                minimapPreviewRight,
-                minimapRect.bottom
-        );
+        if (minimapRect != null) {
+            return new Rect(
+                    minimapPreviewLeft,
+                    minimapRect.top,
+                    minimapPreviewRight,
+                    minimapRect.bottom
+            );
+        } else {
+            return null;
+        }
     }
 
     int minimapPreviewSize() {

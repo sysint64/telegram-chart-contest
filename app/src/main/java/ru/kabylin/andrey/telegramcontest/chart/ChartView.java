@@ -207,11 +207,18 @@ public final class ChartView extends View {
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(3));
-        paint.setStrokeCap(Paint.Cap.ROUND);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(chart.color);
-            paint.setAlpha((int) (chart.opacity * 255f));
+            final int opacity = (int) (chart.opacity * 255f);
+            paint.setAlpha(opacity);
+
+            if (opacity == 255) {
+                paint.setStrokeCap(Paint.Cap.ROUND);
+            } else {
+                paint.setStrokeCap(Paint.Cap.BUTT);
+            }
+
             drawPath(canvas, chart.previewPoints);
         }
 

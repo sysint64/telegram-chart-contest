@@ -89,8 +89,13 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
     private boolean onTouchDown(int id, float touchX, float touchY) {
         final ChartState chartState = chartSolver.getState();
+
         final Rect minimapPreviewRect = chartState.getMinimapPreviewRect();
         final Rect previewRect = chartState.previewRect;
+
+        if (minimapPreviewRect == null) {
+            return false;
+        }
 
         onActionDownTouchX[id] = touchX;
         onActionDownTouchY[id] = touchY;
