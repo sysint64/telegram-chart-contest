@@ -6,6 +6,8 @@ import android.view.MotionEvent;
 
 import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 
+import static android.view.MotionEvent.INVALID_POINTER_ID;
+
 class ChartUserInteractorImpl implements ChartUserInteractor {
     enum State {
         NONE,
@@ -16,16 +18,20 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
     }
 
     private final ChartSolver chartSolver;
-    private State state = State.NONE;
+    private State[] state = new State[]{State.NONE, State.NONE};
 
-    private float onActionDownTouchX = 0;
-    private float onActionDownTouchY = 0;
+    private float[] onActionDownTouchX = new float[2];
+    private float[] onActionDownTouchY = new float[2];
 
-    private float onActionDownMinimapPreviewLeft = 0;
-    private float onActionDownMinimapPreviewRight = 0;
+    private float[] onActionDownMinimapPreviewLeft = new float[2];
+    private float[] onActionDownMinimapPreviewRight = new float[2];
+
+    private boolean multiTouch = false;
 
     private Vertex pointUnderMouse = new Vertex();
     private ChartViewLayoutManager layoutManager = null;
+
+    private int activePointerId = INVALID_POINTER_ID;
 
     ChartUserInteractorImpl(ChartSolver chartSolver) {
         this.chartSolver = chartSolver;
@@ -37,8 +43,53 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        final float touchX = event.getX();
-        final float touchY = event.getY();
+//        final float touchX = event.getX();
+//        final float touchY = event.getY();
+//
+//        Log.d("ChartView", "Pointers "+ multiTouch);
+//
+//        if (!chartSolver.getState().isInit) {
+//            return false;
+//        }
+//
+//        boolean result = false;
+//
+//        switch (event.getActionMasked()) {
+//            case MotionEvent.ACTION_DOWN:
+//                result = onTouchDown(0, touchX, touchY);
+//                break;
+//
+//            case MotionEvent.ACTION_POINTER_DOWN:
+//                result = onTouchDown(1, touchX, touchY);
+//                Log.d("ChartView", "POINTER DOWN");
+//                multiTouch = true;
+//                break;
+//
+//            case MotionEvent.ACTION_POINTER_UP:
+//                multiTouch = false;
+//                break;
+//
+//            case MotionEvent.ACTION_UP:
+//            case MotionEvent.ACTION_CANCEL:
+//                state = State.NONE;
+//                chartSolver.hidePopup();
+//                multiTouch = false;
+//                break;
+//
+//            case MotionEvent.ACTION_MOVE:
+//                result = onTouchMove(touchX, touchY);
+//                break;
+//        }
+//
+//        if (layoutManager != null) {
+//            if (result) {
+//                layoutManager.setScrollEnabled(false);
+//            } else {
+//                layoutManager.setScrollEnabled(true);
+//            }
+//        }
+//
+//        return result;
 
         if (!chartSolver.getState().isInit) {
             return false;
@@ -46,73 +97,92 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
         boolean result = false;
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                result = onTouchDown(touchX, touchY);
-                break;
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
+        int pointCount = Math.min(event.getPointerCount(), 2);
 
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                state = State.NONE;
-                chartSolver.hidePopup();
-                break;
+        multiTouch = pointCount == 2;
 
-            case MotionEvent.ACTION_MOVE:
-                result = onTouchMove(touchX, touchY);
-                break;
-        }
+        for (int i = 0; i < pointCount; ++i) {
+            final float touchX = event.getX(i);
+            final float touchY = event.getY(i);
 
-        if (layoutManager != null) {
-            if (result) {
-                layoutManager.setScrollEnabled(false);
-            } else {
-                layoutManager.setScrollEnabled(true);
+            switch (action) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                case MotionEvent.ACTION_DOWN:
+                    if (state[i] == State.NONE) {
+                        result = onTouchDown(i, touchX, touchY);
+                    }
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    result = onTouchMove(i, touchX, touchY);
+                    break;
+
+                case MotionEvent.ACTION_POINTER_UP:
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    state[i] = State.NONE;
+                    chartSolver.hidePopup();
+                    multiTouch = false;
+                    break;
             }
         }
 
+        if (layoutManager != null) {
+            if (state[0] == State.NONE && state[1] == State.NONE) {
+                layoutManager.setScrollEnabled(true);
+            } else {
+                layoutManager.setScrollEnabled(false);
+            }
+//            if (result) {
+//                layoutManager.setScrollEnabled(false);
+//            } else {
+//                layoutManager.setScrollEnabled(true);
+//            }
+        }
+//        layoutManager.setScrollEnabled(false);
         return result;
     }
 
-    private boolean onTouchDown(float touchX, float touchY) {
+    private boolean onTouchDown(int id, float touchX, float touchY) {
         final ChartState chartState = chartSolver.getState();
         final Rect minimapPreviewRect = chartState.getMinimapPreviewRect();
         final Rect previewRect = chartState.previewRect;
 
-        onActionDownTouchX = touchX;
-        onActionDownTouchY = touchY;
+        onActionDownTouchX[id] = touchX;
+        onActionDownTouchY[id] = touchY;
 
-        if (state != State.NONE) {
+        if (state[id] != State.NONE) {
             return false;
         }
 
         if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.left + chartState.minimapPreviewResizeAreaSize &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
-            state = State.MINIMAP_RESIZE_LEFT;
-            onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
-            onActionDownMinimapPreviewRight = chartState.minimapPreviewRight;
+            state[id] = State.MINIMAP_RESIZE_LEFT;
+            onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft - onActionDownTouchX[id];
+            onActionDownMinimapPreviewRight[id] = chartState.minimapPreviewRight - onActionDownTouchX[id];
             return true;
         }
         else if (touchX > minimapPreviewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < minimapPreviewRect.right &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
-            state = State.MINIMAP_RESIZE_RIGHT;
-            onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
-            onActionDownMinimapPreviewRight = chartState.minimapPreviewRight;
+            state[id] = State.MINIMAP_RESIZE_RIGHT;
+            onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft - onActionDownTouchX[id];
+            onActionDownMinimapPreviewRight[id] = chartState.minimapPreviewRight - onActionDownTouchX[id];
             return true;
         }
-        else  if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.right &&
+        else if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.right &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
-            state = State.MINIMAP_MOVE;
-            onActionDownMinimapPreviewLeft = chartState.minimapPreviewLeft;
-            Log.d("ChartView", "update state to MINIMAP_MOVE");
+            state[id] = State.MINIMAP_MOVE;
+            onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft;
             return true;
         }
         else if (touchX > previewRect.left && touchX < previewRect.right &&
                 touchY > previewRect.top && touchY < previewRect.bottom)
         {
-            state = State.POPUP_MOVE;
+            state[id] = State.POPUP_MOVE;
             chartSolver.dropPopup(touchX, touchY);
             return true;
         }
@@ -121,20 +191,21 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
     }
 
     @SuppressWarnings("unused")
-    private boolean onTouchMove(float touchX, float touchY) {
-        final float delta = touchX - onActionDownTouchX;
+    private boolean onTouchMove(int id, float touchX, float touchY) {
+        float delta = touchX - onActionDownTouchX[id];
+        final ChartState chartState = chartSolver.getState();
 
-        switch (state) {
+        switch (state[id]) {
             case MINIMAP_MOVE:
-                chartSolver.setMinimapPosition(onActionDownMinimapPreviewLeft + delta);
+                chartSolver.setMinimapPosition(onActionDownMinimapPreviewLeft[id] + delta);
                 return true;
 
             case MINIMAP_RESIZE_LEFT:
-                chartSolver.setMinimapLeft(onActionDownMinimapPreviewLeft + delta);
+                chartSolver.setMinimapLeft(touchX + onActionDownMinimapPreviewLeft[id]);
                 return true;
 
             case MINIMAP_RESIZE_RIGHT:
-                chartSolver.setMinimapRight(onActionDownMinimapPreviewRight + delta);
+                chartSolver.setMinimapRight(touchX + onActionDownMinimapPreviewRight[id]);
                 return true;
 
             case POPUP_MOVE:
@@ -142,7 +213,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
                 return true;
 
             default:
-                return false;
+                return true;
         }
     }
 }
