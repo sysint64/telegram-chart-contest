@@ -2,12 +2,14 @@ package ru.kabylin.andrey.telegramcontest;
 
 import ru.kabylin.andrey.telegramcontest.chart.ChartState;
 
-public final class ChartRecyclerItem {
-    public final ChartViewLayoutManager layoutManager;
-    public final ChartState chartState;
+final class ChartRecyclerItem {
+    final ChartViewLayoutManager layoutManager;
+    final ChartState chartState;
+    final String title;
 
-    public ChartRecyclerItem(ChartViewLayoutManager layoutManager, ChartState chartState) {
+    ChartRecyclerItem(ChartViewLayoutManager layoutManager, ChartState chartState, String title) {
         this.layoutManager = layoutManager;
         this.chartState = chartState;
+        this.title = title;
     }
 }

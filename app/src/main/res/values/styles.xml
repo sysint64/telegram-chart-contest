@@ -16,6 +16,7 @@
         <item name="chartBackgroundColor">@color/lightThemeChartBackground</item>
         <item name="regularTextColor">@color/lightThemeRegularTextColor</item>
         <item name="hrColor">@color/lightThemeHr</item>
+        <item name="chartTitleTextColor">@color/lightThemeTitleText</item>
     </style>
 
     <style name="AppNightTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -34,5 +35,6 @@
         <item name="chartBackgroundColor">@color/nightThemeChartBackground</item>
         <item name="regularTextColor">@color/nightThemeRegularTextColor</item>
         <item name="hrColor">@color/nightThemeHr</item>
+        <item name="chartTitleTextColor">@color/nightThemeTitleText</item>
     </style>
 </resources>

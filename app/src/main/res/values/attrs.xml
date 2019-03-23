@@ -4,6 +4,7 @@
     <attr name="cardBackground" format="reference"/>
     <attr name="regularTextColor" format="reference"/>
     <attr name="hrColor" format="reference"/>
+    <attr name="chartTitleTextColor" format="reference"/>
 
     <declare-styleable name="ChartView">
         <attr name="chartAxisTextColor" format="reference"/>

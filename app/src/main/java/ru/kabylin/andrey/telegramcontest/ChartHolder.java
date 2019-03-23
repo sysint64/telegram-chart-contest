@@ -6,6 +6,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 import ru.kabylin.andrey.telegramcontest.chart.ChartData;
 import ru.kabylin.andrey.telegramcontest.chart.ChartState;
@@ -16,11 +17,13 @@ public class ChartHolder extends RecyclerItemHolder<ChartRecyclerItem> implement
     private final ChartView chartView;
     private final AppCompatCheckBox[] checkBoxes = new AppCompatCheckBox[5];
     private final View[] hrs = new View[4];
+    private final TextView titleTextView;
 
     ChartHolder(Context context, View view) {
         super(context, view);
 
         chartView = view.findViewById(R.id.chartView);
+        titleTextView = view.findViewById(R.id.titleTextView);
         checkBoxes[0] = view.findViewById(R.id.checkbox1).findViewById(R.id.checkbox);
         checkBoxes[1] = view.findViewById(R.id.checkbox2).findViewById(R.id.checkbox);
         checkBoxes[2] = view.findViewById(R.id.checkbox3).findViewById(R.id.checkbox);
@@ -42,6 +45,7 @@ public class ChartHolder extends RecyclerItemHolder<ChartRecyclerItem> implement
 
         chartView.setChartState(state);
         chartView.setLayoutManager(data.layoutManager);
+        titleTextView.setText(data.title);
 
         for (int i = 0; i < state.charts.size(); ++i) {
             final ChartData chart = state.charts.get(i);

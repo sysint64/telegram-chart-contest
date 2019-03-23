@@ -24,7 +24,7 @@ import ru.kabylin.andrey.telegramcontest.views.SingleItemRecyclerAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements HolderFactory<ChartRecyclerItem> {
+public class MainActivity extends AppCompatActivity implements HolderFactory<ChartRecyclerItem>, View.OnClickListener {
     private boolean nightMode = false;
     private ArrayList<ChartRecyclerItem> charts = new ArrayList<>();
     private ArrayList<ChartState> chartsStates = new ArrayList<>();
@@ -51,6 +51,12 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
         }
 
         initRecyclerView();
+
+        findViewById(R.id.buttonChart1).setOnClickListener(this);
+        findViewById(R.id.buttonChart2).setOnClickListener(this);
+        findViewById(R.id.buttonChart3).setOnClickListener(this);
+        findViewById(R.id.buttonChart4).setOnClickListener(this);
+        findViewById(R.id.buttonChart5).setOnClickListener(this);
     }
 
     private void loadCharts() {
@@ -72,8 +78,10 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
     }
 
     private void fillCharts() {
+        int counter = 0;
         for (ChartState chartState : chartsStates) {
-            charts.add(new ChartRecyclerItem(layoutManager, chartState));
+            ++counter;
+            charts.add(new ChartRecyclerItem(layoutManager, chartState, "Chart " + counter));
         }
     }
 
@@ -120,5 +128,30 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
 
         outState.putParcelableArrayList("charts", chartsStates);
         outState.putFloat("scroll", recyclerView.getScrollY());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.buttonChart1:
+                recyclerView.smoothScrollToPosition(0);
+                break;
+
+            case R.id.buttonChart2:
+                recyclerView.smoothScrollToPosition(1);
+                break;
+
+            case R.id.buttonChart3:
+                recyclerView.smoothScrollToPosition(2);
+                break;
+
+            case R.id.buttonChart4:
+                recyclerView.smoothScrollToPosition(3);
+                break;
+
+            case R.id.buttonChart5:
+                recyclerView.smoothScrollToPosition(4);
+                break;
+        }
     }
 }
