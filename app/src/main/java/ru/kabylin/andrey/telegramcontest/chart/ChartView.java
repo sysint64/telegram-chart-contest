@@ -259,15 +259,16 @@ public final class ChartView extends View {
 
             if (opacity > 0 && y <= previewRect.bottom) {
                 paint.setTextAlign(Paint.Align.LEFT);
-                paint.setAlpha(opacity);
 
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setColor(chartBackgroundColor);
+                paint.setAlpha(opacity);
                 paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
                 canvas.drawText(vertex.title, vertex.x, y, paint);
 
                 paint.setStyle(Paint.Style.FILL);
                 paint.setColor(chartAxisTextColor);
+                paint.setAlpha(opacity);
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
         }
