@@ -15,6 +15,8 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         MINIMAP_MOVE,
         MINIMAP_RESIZE_LEFT,
         MINIMAP_RESIZE_RIGHT,
+        PREVIEW_RESIZE_LEFT,
+        PREVIEW_RESIZE_RIGHT
     }
 
     private final ChartSolver chartSolver;
@@ -26,12 +28,8 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
     private float[] onActionDownMinimapPreviewLeft = new float[2];
     private float[] onActionDownMinimapPreviewRight = new float[2];
 
-    private boolean multiTouch = false;
-
-    private Vertex pointUnderMouse = new Vertex();
     private ChartViewLayoutManager layoutManager = null;
-
-    private int activePointerId = INVALID_POINTER_ID;
+    private boolean multiTouch = false;
 
     ChartUserInteractorImpl(ChartSolver chartSolver) {
         this.chartSolver = chartSolver;
@@ -43,54 +41,6 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-//        final float touchX = event.getX();
-//        final float touchY = event.getY();
-//
-//        Log.d("ChartView", "Pointers "+ multiTouch);
-//
-//        if (!chartSolver.getState().isInit) {
-//            return false;
-//        }
-//
-//        boolean result = false;
-//
-//        switch (event.getActionMasked()) {
-//            case MotionEvent.ACTION_DOWN:
-//                result = onTouchDown(0, touchX, touchY);
-//                break;
-//
-//            case MotionEvent.ACTION_POINTER_DOWN:
-//                result = onTouchDown(1, touchX, touchY);
-//                Log.d("ChartView", "POINTER DOWN");
-//                multiTouch = true;
-//                break;
-//
-//            case MotionEvent.ACTION_POINTER_UP:
-//                multiTouch = false;
-//                break;
-//
-//            case MotionEvent.ACTION_UP:
-//            case MotionEvent.ACTION_CANCEL:
-//                state = State.NONE;
-//                chartSolver.hidePopup();
-//                multiTouch = false;
-//                break;
-//
-//            case MotionEvent.ACTION_MOVE:
-//                result = onTouchMove(touchX, touchY);
-//                break;
-//        }
-//
-//        if (layoutManager != null) {
-//            if (result) {
-//                layoutManager.setScrollEnabled(false);
-//            } else {
-//                layoutManager.setScrollEnabled(true);
-//            }
-//        }
-//
-//        return result;
-
         if (!chartSolver.getState().isInit) {
             return false;
         }
@@ -99,7 +49,6 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
         int action = event.getAction() & MotionEvent.ACTION_MASK;
         int pointCount = Math.min(event.getPointerCount(), 2);
-
         multiTouch = pointCount == 2;
 
         for (int i = 0; i < pointCount; ++i) {
@@ -123,7 +72,6 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
                 case MotionEvent.ACTION_CANCEL:
                     state[i] = State.NONE;
                     chartSolver.hidePopup();
-                    multiTouch = false;
                     break;
             }
         }
@@ -134,13 +82,8 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
             } else {
                 layoutManager.setScrollEnabled(false);
             }
-//            if (result) {
-//                layoutManager.setScrollEnabled(false);
-//            } else {
-//                layoutManager.setScrollEnabled(true);
-//            }
         }
-//        layoutManager.setScrollEnabled(false);
+
         return result;
     }
 
@@ -156,20 +99,19 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
             return false;
         }
 
+        onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft - onActionDownTouchX[id];
+        onActionDownMinimapPreviewRight[id] = chartState.minimapPreviewRight - onActionDownTouchX[id];
+
         if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.left + chartState.minimapPreviewResizeAreaSize &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state[id] = State.MINIMAP_RESIZE_LEFT;
-            onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft - onActionDownTouchX[id];
-            onActionDownMinimapPreviewRight[id] = chartState.minimapPreviewRight - onActionDownTouchX[id];
             return true;
         }
         else if (touchX > minimapPreviewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < minimapPreviewRect.right &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state[id] = State.MINIMAP_RESIZE_RIGHT;
-            onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft - onActionDownTouchX[id];
-            onActionDownMinimapPreviewRight[id] = chartState.minimapPreviewRight - onActionDownTouchX[id];
             return true;
         }
         else if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.right &&
@@ -182,8 +124,14 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         else if (touchX > previewRect.left && touchX < previewRect.right &&
                 touchY > previewRect.top && touchY < previewRect.bottom)
         {
-            state[id] = State.POPUP_MOVE;
-            chartSolver.dropPopup(touchX, touchY);
+            if (multiTouch) {
+                state[0] = State.PREVIEW_RESIZE_LEFT;
+                state[1] = State.PREVIEW_RESIZE_RIGHT;
+                chartSolver.hidePopup();
+            } else {
+                state[id] = State.POPUP_MOVE;
+                chartSolver.dropPopup(touchX, touchY);
+            }
             return true;
         }
 
@@ -210,6 +158,14 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
 
             case POPUP_MOVE:
                 chartSolver.dropPopup(touchX, touchY);
+                return true;
+
+            case PREVIEW_RESIZE_LEFT:
+                chartSolver.setMinimapLeft(touchX + onActionDownMinimapPreviewLeft[id]);
+                return true;
+
+            case PREVIEW_RESIZE_RIGHT:
+                chartSolver.setMinimapRight(touchX + onActionDownMinimapPreviewRight[id]);
                 return true;
 
             default:
