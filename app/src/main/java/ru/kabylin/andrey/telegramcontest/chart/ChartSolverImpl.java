@@ -217,6 +217,12 @@ public class ChartSolverImpl implements ChartSolver {
         float yMax = 0;
 
         for (final List<Vertex> chartData : charts) {
+            final Vertex vertex = findMaxByY(chartData);
+
+            if (vertex == null) {
+                continue;
+            }
+
             final float max = findMaxByY(chartData).y;
 
             if (max > yMax) {
@@ -343,6 +349,19 @@ public class ChartSolverImpl implements ChartSolver {
         );
 
         lastTime = time;
+
+        final Rect minimapRect = chartState.minimapRect;
+        chartState.minimapPreviewLeft = MathUtils.clamp(
+                chartState.minimapPreviewLeft,
+                minimapRect.left,
+                chartState.minimapPreviewRight - chartState.minimapPreviewResizeAreaSize * 2
+        );
+
+        chartState.minimapPreviewRight = MathUtils.clamp(
+                chartState.minimapPreviewRight,
+                chartState.minimapPreviewLeft + chartState.minimapPreviewResizeAreaSize * 2,
+                minimapRect.right
+        );
     }
 
     @Override

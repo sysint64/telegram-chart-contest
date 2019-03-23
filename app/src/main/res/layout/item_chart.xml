@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="48dp"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="24dp"
     android:background="?attr/cardBackground"
     android:elevation="3dp"
-    android:paddingBottom="16dp"
+    android:paddingBottom="8dp"
     tools:context=".MainActivity"
     tools:targetApi="lollipop">
 
@@ -16,13 +16,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:checked="true"
         android:textColor="?attr/regularTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/hr1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chartView"
         tools:text="#0" />
 
     <android.support.v7.widget.AppCompatCheckBox
@@ -30,14 +31,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:checked="true"
         android:textColor="?attr/regularTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/hr2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hr1"
         tools:text="#1" />
 
     <android.support.v7.widget.AppCompatCheckBox
@@ -45,14 +46,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:checked="true"
         android:textColor="?attr/regularTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/hr3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hr2"
         tools:text="#2" />
 
     <android.support.v7.widget.AppCompatCheckBox
@@ -60,14 +61,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:checked="true"
         android:textColor="?attr/regularTextColor"
+        app:layout_constraintBottom_toTopOf="@+id/hr4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hr3"
         tools:text="#3" />
 
     <android.support.v7.widget.AppCompatCheckBox
@@ -75,25 +76,24 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:checked="true"
         android:textColor="?attr/regularTextColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hr4"
         tools:text="#4" />
 
     <ru.kabylin.andrey.telegramcontest.chart.ChartView
         android:id="@+id/chartView"
         android:layout_width="0dp"
-        android:layout_height="400dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -104,53 +104,53 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="?attr/hrColor"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox2"
         app:layout_constraintEnd_toEndOf="@+id/checkbox1"
-        app:layout_constraintStart_toStartOf="@+id/checkbox1"
-        app:layout_constraintTop_toBottomOf="@+id/checkbox1" />
+        app:layout_constraintStart_toStartOf="@+id/checkbox1" />
 
     <View
         android:id="@+id/hr2"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="?attr/hrColor"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox3"
         app:layout_constraintEnd_toEndOf="@+id/checkbox2"
-        app:layout_constraintStart_toStartOf="@+id/checkbox2"
-        app:layout_constraintTop_toBottomOf="@+id/checkbox2" />
+        app:layout_constraintStart_toStartOf="@+id/checkbox2" />
 
     <View
         android:id="@+id/hr3"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="?attr/hrColor"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox4"
         app:layout_constraintEnd_toEndOf="@+id/checkbox3"
-        app:layout_constraintStart_toStartOf="@+id/checkbox3"
-        app:layout_constraintTop_toBottomOf="@+id/checkbox3" />
+        app:layout_constraintStart_toStartOf="@+id/checkbox3" />
 
     <View
         android:id="@+id/hr4"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="?attr/hrColor"
+        app:layout_constraintBottom_toTopOf="@+id/checkbox5"
         app:layout_constraintEnd_toEndOf="@+id/checkbox4"
-        app:layout_constraintStart_toStartOf="@+id/checkbox4"
-        app:layout_constraintTop_toBottomOf="@+id/checkbox4" />
+        app:layout_constraintStart_toStartOf="@+id/checkbox4" />
 
     <TextView
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:textColor="?attr/chartTitleTextColor"
-        android:textSize="24sp"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Chart Title" />

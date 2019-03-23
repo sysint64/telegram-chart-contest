@@ -135,7 +135,7 @@ public final class ChartView extends View {
         chartSolver.calculateMinimapPoints(minimapRect);
         final ChartState state = chartSolver.getState();
 
-        paint.setStrokeWidth(1);
+        paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(1));
 
         for (final ChartData chart : state.charts) {
             paint.setColor(chart.color);
@@ -206,13 +206,16 @@ public final class ChartView extends View {
         chartSolver.calculatePreviewPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
-        paint.setStrokeWidth(3);
+        paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(3));
+        paint.setStrokeCap(Paint.Cap.ROUND);
 
         for (final ChartData chart : state.charts) {
             paint.setColor(chart.color);
             paint.setAlpha((int) (chart.opacity * 255f));
             drawPath(canvas, chart.previewPoints);
         }
+
+        paint.setStrokeCap(Paint.Cap.BUTT);
     }
 
     private void drawPath(Canvas canvas, List<Vertex> points) {
