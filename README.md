@@ -8,6 +8,6 @@ Key store password: 123321
 
 # Screenshots
 
-![Image](https://raw.githubusercontent.com/sysint64/telegram-chart-contest/master/screenshot-light.png)
+<img src="https://raw.githubusercontent.com/sysint64/telegram-chart-contest/master/screenshot-light.png" width="50%">
 
-![Image](https://raw.githubusercontent.com/sysint64/telegram-chart-contest/master/screenshot-night.png)
+<img src="https://raw.githubusercontent.com/sysint64/telegram-chart-contest/master/screenshot-night.png" width="50%">
