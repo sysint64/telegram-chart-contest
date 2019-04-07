@@ -8,7 +8,7 @@
     <color name="lightThemeChartAxisText">#96a2aa</color>
     <color name="lightThemeCardBackground">#ffffff</color>
     <color name="lightThemeTitleText">#3896d4</color>
-    <color name="lightThemeChartGrid">#f1f1f2</color>
+    <color name="lightThemeChartGrid">#000000</color>
     <color name="lightThemeChartPopup">#f1f1f2</color>
     <color name="lightThemeChartPopupLine">#e5ebef</color>
     <color name="lightThemeChartPopupTitle">#222222</color>

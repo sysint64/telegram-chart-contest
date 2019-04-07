@@ -71,7 +71,6 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     state[i] = State.NONE;
-                    chartSolver.hidePopup();
                     break;
             }
         }
@@ -111,12 +110,14 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state[id] = State.MINIMAP_RESIZE_LEFT;
+            chartSolver.hidePopup();
             return true;
         }
         else if (touchX > minimapPreviewRect.right - chartState.minimapPreviewResizeAreaSize && touchX < minimapPreviewRect.right &&
                 touchY > minimapPreviewRect.top && touchY < minimapPreviewRect.bottom)
         {
             state[id] = State.MINIMAP_RESIZE_RIGHT;
+            chartSolver.hidePopup();
             return true;
         }
         else if (touchX > minimapPreviewRect.left && touchX < minimapPreviewRect.right &&
@@ -124,6 +125,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         {
             state[id] = State.MINIMAP_MOVE;
             onActionDownMinimapPreviewLeft[id] = chartState.minimapPreviewLeft;
+            chartSolver.hidePopup();
             return true;
         }
         else if (touchX > previewRect.left && touchX < previewRect.right &&
