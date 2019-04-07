@@ -145,7 +145,12 @@ public final class ChartView extends View {
                 /* bottom */ getHeight()
         );
 
-        chartSolver.calculateMinimapPoints(minimapRect);
+        if (chartType == ChartType.LINES_2Y) {
+            chartSolver.calculate2YMinimapPoints(minimapRect);
+        } else {
+            chartSolver.calculateMinimapPoints(minimapRect);
+        }
+
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(1));

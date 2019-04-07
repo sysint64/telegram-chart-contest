@@ -73,6 +73,16 @@ public class ChartSolverImpl implements ChartSolver {
         }
     }
 
+    @Override
+    public void calculate2YMinimapPoints(Rect rect) {
+        chartState.minimapRect = rect;
+
+        for (final ChartData chartData : chartState.charts) {
+            final float max = findMaxByY(chartData.originalData).y;
+            calculateChartMinimapPoints(rect, max, chartData);
+        }
+    }
+
     private void calculateChartMinimapPoints(final Rect rect, final float yMax, final ChartData chartData) {
         chartData.minimapPoints.clear();
 

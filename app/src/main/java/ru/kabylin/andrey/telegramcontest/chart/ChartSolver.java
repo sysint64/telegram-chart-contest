@@ -7,6 +7,8 @@ public interface ChartSolver {
 
     void calculateMinimapPoints(final Rect rect);
 
+    void calculate2YMinimapPoints(final Rect rect);
+
     void calculatePreviewPoints(final Rect rect);
 
     void calculate2YPreviewPoints(final Rect rect);
