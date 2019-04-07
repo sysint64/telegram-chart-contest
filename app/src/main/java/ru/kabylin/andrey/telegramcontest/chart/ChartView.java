@@ -364,7 +364,7 @@ public final class ChartView extends View {
                 );
             }
 
-            Collections.sort(stack);
+            Collections.reverse(stack);
             drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack);
             lastPoint = point;
         }
@@ -376,6 +376,10 @@ public final class ChartView extends View {
         for (StackedVertex vertex : stack) {
             paint.setColor(vertex.color);
             paint.setAlpha((int) (vertex.opacity * 150f));
+
+            if (vertex.y > bottom) {
+                continue;
+            }
 
             final RectF rect = new RectF(x1, vertex.y, x2, bottom);
             bottom = vertex.y;
