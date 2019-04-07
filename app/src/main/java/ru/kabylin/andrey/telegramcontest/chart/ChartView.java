@@ -19,6 +19,15 @@ import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 import java.util.List;
 
 public final class ChartView extends View {
+
+    enum ChartType {
+        LINES,
+        LINES_2Y,
+        BARS,
+        STACKED_AREA,
+        PIE
+    }
+
     final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     final ChartSolver chartSolver = new ChartSolverImpl();
     final ChartUserInteractor userInteractor = new ChartUserInteractorImpl(chartSolver);
@@ -43,6 +52,9 @@ public final class ChartView extends View {
     private int chartMinimapOverlayColor = Color.BLACK;
     private int chartMinimapBorderColor = Color.BLACK;
     private int chartBackgroundColor = Color.BLACK;
+
+    private ChartType zoomOutChartType = ChartType.LINES;
+    private ChartType zoomInChartType = ChartType.LINES;
 
     public ChartView(Context context) {
         super(context);
