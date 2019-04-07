@@ -27,4 +27,9 @@ public class ChartData {
         this.name = name;
         this.color = Color.parseColor(color);
     }
+
+    enum SourceType {
+        MINIMAP,
+        PREVIEW
+    }
 }

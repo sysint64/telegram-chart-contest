@@ -16,6 +16,8 @@ import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class ChartView extends View {
@@ -53,7 +55,7 @@ public final class ChartView extends View {
     private int chartMinimapBorderColor = Color.BLACK;
     private int chartBackgroundColor = Color.BLACK;
 
-    private ChartType chartType = ChartType.LINES_2Y;
+    private ChartType chartType = ChartType.BARS;
     private ChartType zoomInChartType = ChartType.LINES;
 
     public ChartView(Context context) {
@@ -153,12 +155,25 @@ public final class ChartView extends View {
 
         final ChartState state = chartSolver.getState();
 
-        paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(1));
+        paint.setStrokeWidth(1);
 
-        for (final ChartData chart : state.charts) {
-            paint.setColor(chart.color);
-            paint.setAlpha((int) (chart.opacity * 255f));
-            drawPath(canvas, chart.minimapPoints);
+//        for (final ChartData chart : state.charts) {
+//            paint.setColor(chart.color);
+//            paint.setAlpha((int) (chart.opacity * 255f));
+//            drawPath(canvas, chart.minimapPoints);
+//        }
+        switch (chartType) {
+            case LINES_2Y:
+            case LINES:
+                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP);
+                break;
+
+            case BARS:
+                drawStackedBars(canvas, minimapRect, state.charts, ChartData.SourceType.MINIMAP);
+                break;
+
+            default:
+                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP);
         }
     }
 
@@ -213,6 +228,23 @@ public final class ChartView extends View {
         canvas.drawRect(minimapBorderBottomRect, paint);
     }
 
+    final class StackedVertex implements Comparable<StackedVertex> {
+        final float y;
+        final float opacity;
+        final int color;
+
+        StackedVertex(float y, float opacity, int color) {
+            this.y = y;
+            this.opacity = opacity;
+            this.color = color;
+        }
+
+        @Override
+        public int compareTo(StackedVertex o) {
+            return (int) (o.y - this.y);
+        }
+    }
+
     private void drawPreview(Canvas canvas) {
         previewRect.set(
                 /* left */ 0,
@@ -229,23 +261,38 @@ public final class ChartView extends View {
 
         final ChartState state = chartSolver.getState();
 
-        paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(3));
+        paint.setStrokeWidth(3);
 
-        for (final ChartData chart : state.charts) {
-            paint.setColor(chart.color);
-            final int opacity = (int) (chart.opacity * 255f);
-            paint.setAlpha(opacity);
+        switch (chartType) {
+            case LINES_2Y:
+            case LINES:
+                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW);
+                break;
 
-            if (opacity == 255) {
-                paint.setStrokeCap(Paint.Cap.ROUND);
-            } else {
-                paint.setStrokeCap(Paint.Cap.BUTT);
-            }
+            case BARS:
+                drawStackedBars(canvas, previewRect, state.charts, ChartData.SourceType.PREVIEW);
+                break;
 
-            drawPath(canvas, chart.previewPoints);
+            default:
+                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW);
         }
+    }
 
-        paint.setStrokeCap(Paint.Cap.BUTT);
+    private void drawPaths(Canvas canvas, List<ChartData> charts, ChartData.SourceType source) {
+        for (final ChartData chart : charts) {
+            paint.setColor(chart.color);
+            paint.setAlpha((int) (chart.opacity * 255f));
+
+            switch (source) {
+                case MINIMAP:
+                    drawPath(canvas, chart.minimapPoints);
+                    break;
+
+                case PREVIEW:
+                    drawPath(canvas, chart.previewPoints);
+                    break;
+            }
+        }
     }
 
     private void drawPath(Canvas canvas, List<Vertex> points) {
@@ -261,6 +308,79 @@ public final class ChartView extends View {
         }
 
         canvas.drawLines(rawPoints, paint);
+    }
+
+    private void drawStackedBars(Canvas canvas, Rect previewRect, List<ChartData> charts, ChartData.SourceType source) {
+        List<StackedVertex> stack = new ArrayList<>();
+        Vertex lastPoint = null;
+
+        final List<Vertex> points;
+
+        switch (source) {
+            case MINIMAP:
+                points = charts.get(0).minimapPoints;
+                break;
+
+            case PREVIEW:
+                points = charts.get(0).previewPoints;
+                break;
+
+            default:
+                points = charts.get(0).previewPoints;
+        }
+
+        for (int i = 0; i < points.size(); ++i) {
+            final Vertex point = points.get(i);
+
+            if (lastPoint == null) {
+                lastPoint = point;
+                continue;
+            }
+
+            stack.clear();
+
+            for (final ChartData chart : charts) {
+                final float value;
+
+                switch (source) {
+                    case MINIMAP:
+                        value = (float) chart.minimapPoints.get(i).y;
+                        break;
+
+                    case PREVIEW:
+                        value = (float) chart.previewPoints.get(i).y;
+                        break;
+
+                    default:
+                        value = (float) chart.previewPoints.get(i).y;
+                }
+
+                stack.add(
+                        new StackedVertex(
+                                value,
+                                chart.opacity,
+                                chart.color
+                        )
+                );
+            }
+
+            Collections.sort(stack);
+            drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack);
+            lastPoint = point;
+        }
+    }
+
+    private void drawStackedBar(Canvas canvas, Rect previewRect, float x1, float x2, List<StackedVertex> stack) {
+        float bottom = previewRect.bottom;
+
+        for (StackedVertex vertex : stack) {
+            paint.setColor(vertex.color);
+            paint.setAlpha((int) (vertex.opacity * 150f));
+
+            final RectF rect = new RectF(x1, vertex.y, x2, bottom);
+            bottom = vertex.y;
+            canvas.drawRect(rect, paint);
+        }
     }
 
     private void drawAxisXLabels(Canvas canvas) {

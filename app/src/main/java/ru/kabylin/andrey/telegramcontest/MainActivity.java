@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
 
             JSONArray jsonArray = new JSONArray(json);
 
-            for (int i = 0; i < /* jsonArray.length() */ 1; ++i) {
+            for (int i = 4; i < /* jsonArray.length() */ 5; ++i) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 final ChartState chartState = ChartJsonLoader.loadCharts(jsonObject);
                 chartsStates.add(chartState);
