@@ -53,7 +53,7 @@ public final class ChartView extends View {
     private int chartMinimapBorderColor = Color.BLACK;
     private int chartBackgroundColor = Color.BLACK;
 
-    private ChartType zoomOutChartType = ChartType.LINES;
+    private ChartType chartType = ChartType.LINES_2Y;
     private ChartType zoomInChartType = ChartType.LINES;
 
     public ChartView(Context context) {
@@ -130,6 +130,7 @@ public final class ChartView extends View {
         drawIntersectPoints(canvas);
         drawAxisXLabels(canvas);
         drawAxisYLabels(canvas);
+        drawAxisY2Labels(canvas);
         drawPopup(canvas);
 
         chartSolver.onProgress();
@@ -215,7 +216,12 @@ public final class ChartView extends View {
                 /* bottom */ getHeight() - (int) MeasureUtils.convertDpToPixel(90)
         );
 
-        chartSolver.calculatePreviewPoints(previewRect);
+        if (chartType == ChartType.LINES_2Y) {
+            chartSolver.calculate2YPreviewPoints(previewRect);
+        } else {
+            chartSolver.calculatePreviewPoints(previewRect);
+        }
+
         final ChartState state = chartSolver.getState();
 
         paint.setStrokeWidth((int) MeasureUtils.convertDpToPixel(3));
@@ -272,7 +278,6 @@ public final class ChartView extends View {
 
     private void drawAxisYLabels(Canvas canvas) {
         final ChartState state = chartSolver.getState();
-
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
 
         for (final AxisVertex vertex : state.previewAxisY) {
@@ -289,7 +294,47 @@ public final class ChartView extends View {
                 canvas.drawText(vertex.title, vertex.x, y, paint);
 
                 paint.setStyle(Paint.Style.FILL);
-                paint.setColor(chartAxisTextColor);
+
+                if (chartType == ChartType.LINES_2Y) {
+                    paint.setColor(state.charts.get(0).color);
+                } else {
+                    paint.setColor(chartAxisTextColor);
+                }
+
+                paint.setAlpha(opacity);
+                canvas.drawText(vertex.title, vertex.x, y, paint);
+            }
+        }
+    }
+
+    private void drawAxisY2Labels(Canvas canvas) {
+        if (chartType != ChartType.LINES_2Y)
+            return;
+
+        final ChartState state = chartSolver.getState();
+        paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
+
+        for (final AxisVertex vertex : state.previewAxisY2) {
+            final int opacity = (int) (vertex.opacity * 255f);
+            final float y = vertex.y - state.axisYTextOffsetY + vertex.yOffset;
+
+            if (opacity > 0 && y <= previewRect.bottom) {
+                paint.setTextAlign(Paint.Align.RIGHT);
+
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setColor(chartBackgroundColor);
+                paint.setAlpha(opacity);
+                paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
+                canvas.drawText(vertex.title, vertex.x, y, paint);
+
+                paint.setStyle(Paint.Style.FILL);
+
+                if (chartType == ChartType.LINES_2Y) {
+                    paint.setColor(state.charts.get(1).color);
+                } else {
+                    paint.setColor(chartAxisTextColor);
+                }
+
                 paint.setAlpha(opacity);
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
@@ -305,7 +350,13 @@ public final class ChartView extends View {
 
         for (final AxisVertex vertex : state.previewAxisY) {
             final int opacity = (int) (vertex.opacity * 255f);
-            final float y = vertex.y + vertex.yOffset;
+            final float y;
+
+            if (chartType == ChartType.LINES_2Y) {
+                y = vertex.y;
+            } else {
+                y = vertex.y + vertex.yOffset;
+            }
 
             if (opacity > 0 && y <= previewRect.bottom) {
                 paint.setAlpha(opacity);

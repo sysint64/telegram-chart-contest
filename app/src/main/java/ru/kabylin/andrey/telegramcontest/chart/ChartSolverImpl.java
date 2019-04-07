@@ -2,6 +2,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.Paint;
 import android.graphics.Rect;
+
 import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
@@ -106,6 +107,7 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         chartState.statePreviewMaxY = findMaxByYInLists(subCharts);
+        chartState.statePreviewMaxY2 = chartState.statePreviewMaxY;
 
         if (!chartState.isInitPreviewMaxY) {
             chartState.previewMaxY = chartState.statePreviewMaxY;
@@ -116,6 +118,48 @@ public class ChartSolverImpl implements ChartSolver {
             final ChartData chartData = chartState.charts.get(i);
             calculatePreviewPoints(rect, chartState.previewMaxY, chartData, i);
         }
+    }
+
+    @Override
+    public void calculate2YPreviewPoints(Rect rect) {
+        chartState.previewRect = rect;
+        subCharts.clear();
+
+        for (int i = 0; i < chartState.charts.size(); ++i) {
+            final ChartData chartData = chartState.charts.get(i);
+
+            if (chartData.isVisible) {
+                final List<Vertex> points = getMinimapPreviewPoints(chartData, i, true);
+                subCharts.add(points);
+            }
+        }
+
+        if (subCharts.size() == 0)
+            return;
+
+        if (subCharts.size() == 1) {
+            chartState.statePreviewMaxY = findMaxByY(subCharts.get(0)).y;
+            chartState.statePreviewMaxY2 = chartState.statePreviewMaxY;
+        } else {
+            chartState.statePreviewMaxY = findMaxByY(subCharts.get(0)).y;
+            chartState.statePreviewMaxY2 = findMaxByY(subCharts.get(1)).y;
+        }
+
+        if (!chartState.isInitPreviewMaxY) {
+            chartState.previewMaxY = chartState.statePreviewMaxY;
+            chartState.previewMaxY2 = chartState.statePreviewMaxY2;
+            chartState.isInitPreviewMaxY = true;
+        }
+
+        if (chartState.charts.size() != 2) {
+            throw new AssertionError("Should be only 2 charts");
+        }
+
+        final ChartData chartData = chartState.charts.get(0);
+        calculatePreviewPoints(rect, chartState.previewMaxY, chartData, 0);
+
+        final ChartData chartData2 = chartState.charts.get(1);
+        calculatePreviewPoints(rect, chartState.previewMaxY2, chartData2, 1);
     }
 
     private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData, final int index) {
@@ -300,6 +344,13 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.previewMaxYChangeSpeed
         );
 
+        chartState.previewMaxY2 = MathUtils.interpTo(
+                chartState.previewMaxY2,
+                chartState.statePreviewMaxY2,
+                deltaTime,
+                chartState.previewMaxYChangeSpeed
+        );
+
         for (final ChartData chart : chartState.charts) {
             chart.opacity = MathUtils.interpTo(
                     chart.opacity,
@@ -326,6 +377,22 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         for (final AxisVertex vertex : chartState.yAxis) {
+            vertex.opacity = MathUtils.interpTo(
+                    vertex.opacity,
+                    vertex.stateOpacity,
+                    deltaTime,
+                    chartState.axisYOpacityChangeSpeed
+            );
+
+            vertex.yOffset = MathUtils.interpTo(
+                    vertex.yOffset,
+                    vertex.stateYOffset,
+                    deltaTime,
+                    chartState.axisYOffsetChangeSpeed
+            );
+        }
+
+        for (final AxisVertex vertex : chartState.y2Axis) {
             vertex.opacity = MathUtils.interpTo(
                     vertex.opacity,
                     vertex.stateOpacity,
@@ -488,34 +555,65 @@ public class ChartSolverImpl implements ChartSolver {
         return vertices;
     }
 
-    @Override
-    public void calculateAxisYPoints(Rect rect) {
-        if (chartState.yAxisCurrent.isEmpty()) {
+    private final class CalculateAxisYPointsInput {
+        final List<AxisVertex> yAxis;
+        final List<AxisVertex> yAxisCurrent;
+        final List<AxisVertex> yAxisPast;
+        final float statePreviewMaxY;
+        final float lastStatePreviewMaxY;
+        final List<AxisVertex> previewAxisY;
+        final AxisVertex previewAxisYZero;
+        final Paint.Align align;
+        final boolean axisYIsInit;
+
+        private CalculateAxisYPointsInput(
+                List<AxisVertex> yAxis, List<AxisVertex> yAxisCurrent,
+                List<AxisVertex> yAxisPast, float statePreviewMaxY,
+                float lastStatePreviewMaxY, List<AxisVertex> previewAxisY,
+                AxisVertex previewAxisYZero, Paint.Align align,
+                boolean axisYIsInit
+        ) {
+            this.yAxis = yAxis;
+            this.yAxisCurrent = yAxisCurrent;
+            this.yAxisPast = yAxisPast;
+            this.statePreviewMaxY = statePreviewMaxY;
+            this.lastStatePreviewMaxY = lastStatePreviewMaxY;
+            this.previewAxisY = previewAxisY;
+            this.previewAxisYZero = previewAxisYZero;
+            this.align = align;
+            this.axisYIsInit = axisYIsInit;
+        }
+    }
+
+    private boolean calculateAxisYPoints_(CalculateAxisYPointsInput input, Rect rect) {
+        boolean isInit = input.axisYIsInit;
+
+        if (input.yAxisCurrent.isEmpty()) {
             for (int i = 0; i < 5; ++i) {
-                chartState.yAxisCurrent.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
-                chartState.yAxisPast.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
+                input.yAxisCurrent.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
+                input.yAxisPast.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
             }
 
-            chartState.yAxis.clear();
-            chartState.yAxis.addAll(chartState.yAxisCurrent);
-            chartState.yAxis.addAll(chartState.yAxisPast);
+            input.yAxis.clear();
+            input.yAxis.addAll(input.yAxisCurrent);
+            input.yAxis.addAll(input.yAxisPast);
         }
 
-        if (Math.floor(chartState.lastStatePreviewMaxY) != Math.floor(chartState.statePreviewMaxY)) {
-            float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((chartState.lastStatePreviewMaxY - chartState.statePreviewMaxY) / Math.max(chartState.lastStatePreviewMaxY, chartState.statePreviewMaxY));
+        if (Math.floor(input.lastStatePreviewMaxY) != Math.floor(input.statePreviewMaxY)) {
+            float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((input.lastStatePreviewMaxY - input.statePreviewMaxY) / Math.max(input.lastStatePreviewMaxY, input.statePreviewMaxY));
 
             if (Math.abs(deltaMaxY) < chartState.minAxisYDelta) {
                 deltaMaxY = 0;
             }
 
-            for (int i = 0; i < chartState.yAxisPast.size(); ++i) {
-                AxisVertex vertex = chartState.yAxisPast.get(i);
-                AxisVertex current = chartState.yAxisCurrent.get(i);
+            for (int i = 0; i < input.yAxisPast.size(); ++i) {
+                AxisVertex vertex = input.yAxisPast.get(i);
+                AxisVertex current = input.yAxisCurrent.get(i);
 
                 vertex.x = current.x;
                 vertex.y = current.y;
 
-                if (chartState.axisYIsInit) {
+                if (input.axisYIsInit) {
                     if (vertex.opacity < 0.1f) {
                         vertex.yOffset = 0f;
                         vertex.stateYOffset = -deltaMaxY;
@@ -534,17 +632,17 @@ public class ChartSolverImpl implements ChartSolver {
                 }
             }
 
-            final long delta = (int) ((rect.bottom - rect.top - chartState.axisYTopPadding) / 5f);
-            final long deltaValue = (long) (chartState.statePreviewMaxY / 6f);
+            final long delta = Math.round((rect.bottom - rect.top) / 6f);
+            final long deltaValue = Math.round((input.statePreviewMaxY / 6f));
 
             long current = rect.bottom;
             long currentValue = 0;
 
-            for (AxisVertex vertex : chartState.yAxisCurrent) {
+            for (AxisVertex vertex : input.yAxisCurrent) {
                 current -= delta;
                 currentValue += deltaValue;
 
-                if (chartState.axisYIsInit) {
+                if (input.axisYIsInit) {
                     if (vertex.opacity > 0.9f) {
                         vertex.yOffset = deltaMaxY;
                         vertex.stateYOffset = 0f;
@@ -561,27 +659,72 @@ public class ChartSolverImpl implements ChartSolver {
                     vertex.stateOpacity = 1f;
                 }
 
-                vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
+                if (input.align == Paint.Align.LEFT) {
+                    vertex.x = (int) (rect.left + chartState.axisYTextOffsetX);
+                } else if (input.align == Paint.Align.RIGHT) {
+                    vertex.x = (int) (rect.right - chartState.axisYTextOffsetX);
+                }
+
                 vertex.y = current;
                 vertex.title = String.valueOf(currentValue);
             }
 
-            chartState.axisYIsInit = true;
+            isInit = true;
         }
 
+        if (input.align == Paint.Align.LEFT) {
+            input.previewAxisYZero.x = (int) (rect.left + chartState.axisYTextOffsetX);
+        } else if (input.align == Paint.Align.RIGHT) {
+            input.previewAxisYZero.x = (int) (rect.right - chartState.axisYTextOffsetX);
+        }
+
+        input.previewAxisYZero.y = rect.bottom;
+        input.previewAxisYZero.title = "0";
+        input.previewAxisYZero.opacity = 1f;
+        input.previewAxisYZero.stateOpacity = 1f;
+
+        input.previewAxisY.clear();
+        input.previewAxisY.add(input.previewAxisYZero);
+        input.previewAxisY.addAll(input.yAxisCurrent);
+        input.previewAxisY.addAll(input.yAxisPast);
+
+        return isInit;
+    }
+
+    @Override
+    public void calculateAxisYPoints(Rect rect) {
+        chartState.axisYIsInit = calculateAxisYPoints_(
+                new CalculateAxisYPointsInput(
+                        chartState.yAxis,
+                        chartState.yAxisCurrent,
+                        chartState.yAxisPast,
+                        chartState.statePreviewMaxY,
+                        chartState.lastStatePreviewMaxY,
+                        chartState.previewAxisY,
+                        chartState.previewAxisYZero,
+                        Paint.Align.LEFT,
+                        chartState.axisYIsInit
+                ),
+                rect
+        );
+
+        chartState.axisY2IsInit = calculateAxisYPoints_(
+                new CalculateAxisYPointsInput(
+                        chartState.y2Axis,
+                        chartState.y2AxisCurrent,
+                        chartState.y2AxisPast,
+                        chartState.statePreviewMaxY2,
+                        chartState.lastStatePreviewMaxY2,
+                        chartState.previewAxisY2,
+                        chartState.previewAxisY2Zero,
+                        Paint.Align.RIGHT,
+                        chartState.axisY2IsInit
+                ),
+                rect
+        );
+
         chartState.lastStatePreviewMaxY = chartState.statePreviewMaxY;
-
-        chartState.previewAxisY.clear();
-
-        chartState.previewAxisYZero.x = (int) (rect.left + chartState.axisYTextOffsetX);
-        chartState.previewAxisYZero.y = rect.bottom;
-        chartState.previewAxisYZero.title = "0";
-        chartState.previewAxisYZero.opacity = 1f;
-        chartState.previewAxisYZero.stateOpacity = 1f;
-
-        chartState.previewAxisY.add(chartState.previewAxisYZero);
-        chartState.previewAxisY.addAll(chartState.yAxisCurrent);
-        chartState.previewAxisY.addAll(chartState.yAxisPast);
+        chartState.lastStatePreviewMaxY2 = chartState.statePreviewMaxY2;
     }
 
     @Override
@@ -605,8 +748,7 @@ public class ChartSolverImpl implements ChartSolver {
 
                     intersectPoint.x = vertex.x;
                     intersectPoint.y = vertex.y;
-                }
-                else {
+                } else {
                     return;
                 }
             }

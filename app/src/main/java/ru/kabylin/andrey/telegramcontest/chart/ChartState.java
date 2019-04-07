@@ -21,7 +21,9 @@ public final class ChartState implements Parcelable {
     Rect previewRect = null;
     boolean isInitPreviewMaxY = false;
     float statePreviewMaxY = 0f;
+    float statePreviewMaxY2 = 0f;
     float previewMaxY = 0f;
+    float previewMaxY2 = 0f;
 
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
@@ -35,10 +37,10 @@ public final class ChartState implements Parcelable {
     float axisXOffsetY = MeasureUtils.convertDpToPixel(20);
     float axisYTextOffsetX = MeasureUtils.convertDpToPixel(8);
     float axisYTextOffsetY = MeasureUtils.convertDpToPixel(5);
-    float axisYTopPadding = MeasureUtils.convertDpToPixel(40);
 
     boolean axisXIsInit = false;
     boolean axisYIsInit = false;
+    boolean axisY2IsInit = false;
 
     float minAxisYDelta = MeasureUtils.convertDpToPixel(10);
     float intersectPointSize = MeasureUtils.convertDpToPixel(5);
@@ -53,13 +55,20 @@ public final class ChartState implements Parcelable {
     final List<AxisVertex> yAxisCurrent = new ArrayList<>();
     final List<AxisVertex> yAxisPast = new ArrayList<>();
 
+    final List<AxisVertex> y2Axis = new ArrayList<>();
+    final List<AxisVertex> y2AxisCurrent = new ArrayList<>();
+    final List<AxisVertex> y2AxisPast = new ArrayList<>();
+
     // For Y axis animations
     float lastStatePreviewMaxY = 0f;
+    float lastStatePreviewMaxY2 = 0f;
 
     final List<AxisVertex> previewAxisX = new ArrayList<>();
     final List<AxisVertex> previewAxisY = new ArrayList<>();
+    final List<AxisVertex> previewAxisY2 = new ArrayList<>();
 
     final AxisVertex previewAxisYZero = new AxisVertex(0, 0, "0");
+    final AxisVertex previewAxisY2Zero = new AxisVertex(0, 0, "0");
 
     final List<AxisVertex> axisXPool = new ArrayList<>();
     final List<AxisVertex> previewAxisXPool = new ArrayList<>();
@@ -83,7 +92,9 @@ public final class ChartState implements Parcelable {
         previewRect = in.readParcelable(Rect.class.getClassLoader());
         isInitPreviewMaxY = in.readByte() != 0;
         statePreviewMaxY = in.readFloat();
+        statePreviewMaxY2 = in.readFloat();
         previewMaxY = in.readFloat();
+        previewMaxY2 = in.readFloat();
         previewMaxYChangeSpeed = in.readFloat();
         opacityChangeSpeed = in.readFloat();
         minimapMaxYChangeSpeed = in.readFloat();
@@ -95,13 +106,14 @@ public final class ChartState implements Parcelable {
         axisXOffsetY = in.readFloat();
         axisYTextOffsetX = in.readFloat();
         axisYTextOffsetY = in.readFloat();
-        axisYTopPadding = in.readFloat();
         axisXIsInit = in.readByte() != 0;
         axisYIsInit = in.readByte() != 0;
+        axisY2IsInit = in.readByte() != 0;
         minAxisYDelta = in.readFloat();
         intersectPointSize = in.readFloat();
         intersectPointStrokeWidth = in.readFloat();
         lastStatePreviewMaxY = in.readFloat();
+        lastStatePreviewMaxY2 = in.readFloat();
         isInit = in.readByte() != 0;
     }
 
@@ -179,7 +191,9 @@ public final class ChartState implements Parcelable {
         dest.writeParcelable(previewRect, flags);
         dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));
         dest.writeFloat(statePreviewMaxY);
+        dest.writeFloat(statePreviewMaxY2);
         dest.writeFloat(previewMaxY);
+        dest.writeFloat(previewMaxY2);
         dest.writeFloat(previewMaxYChangeSpeed);
         dest.writeFloat(opacityChangeSpeed);
         dest.writeFloat(minimapMaxYChangeSpeed);
@@ -191,13 +205,14 @@ public final class ChartState implements Parcelable {
         dest.writeFloat(axisXOffsetY);
         dest.writeFloat(axisYTextOffsetX);
         dest.writeFloat(axisYTextOffsetY);
-        dest.writeFloat(axisYTopPadding);
         dest.writeByte((byte) (axisXIsInit ? 1 : 0));
         dest.writeByte((byte) (axisYIsInit ? 1 : 0));
+        dest.writeByte((byte) (axisY2IsInit ? 1 : 0));
         dest.writeFloat(minAxisYDelta);
         dest.writeFloat(intersectPointSize);
         dest.writeFloat(intersectPointStrokeWidth);
         dest.writeFloat(lastStatePreviewMaxY);
+        dest.writeFloat(lastStatePreviewMaxY2);
         dest.writeByte((byte) (isInit ? 1 : 0));
     }
 }
