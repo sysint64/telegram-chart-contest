@@ -81,7 +81,12 @@ final class Popup {
         drawItems(canvas);
     }
 
-    private void measure(Rect rect, float offsetX, boolean end) {
+    private void measure(Rect rect, float offsetX, boolean finalMeasure) {
+        // Avoid deep recursion
+        if (finalMeasure) {
+            return;
+        }
+
         final float dp1 = MeasureUtils.convertDpToPixel(1);
         final float dp2 = MeasureUtils.convertDpToPixel(2);
         final float dp4 = MeasureUtils.convertDpToPixel(4);
@@ -157,22 +162,22 @@ final class Popup {
         shadowRectLevel2.bottom = bottom + dp2;
         shadowRectLevel2.right = Math.max(shadowRectLevel1.right, lastItemLeft - itemRightMargin + dp8 + dp1);
 
-        if (!end) {
-            if (popupRect.left <= rect.left) {
-                final float newOffset = popupRect.left - rect.left + MeasureUtils.convertDpToPixel(10);
+        if (popupRect.left <= rect.left) {
+            final float newOffset = -MeasureUtils.convertDpToPixel(10);
 
-                if (left - newOffset > rect.left) {
-                    measure(rect, newOffset, true);
-                }
+            if (left - newOffset > rect.left) {
+                measure(rect, newOffset, true);
             }
-            else if (popupRect.right >= rect.right) {
-                final float newOffset = popupRect.right - rect.right + MeasureUtils.convertDpToPixel(30);
+        }
 
-                if (left - newOffset + popupRect.width() < rect.right) {
-                    measure(rect, newOffset, true);
-                } else {
-                    measure(rect, popupRect.width() + MeasureUtils.convertDpToPixel(10), true);
-                }
+        if (popupRect.right >= rect.right) {
+            final float newOffset = popupRect.right - rect.right + MeasureUtils.convertDpToPixel(30);
+
+            if (left - newOffset + popupRect.width() < rect.right) {
+                measure(rect, newOffset, true);
+            }
+            else {
+                measure(rect, popupRect.width() + MeasureUtils.convertDpToPixel(10), true);
             }
         }
     }

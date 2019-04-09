@@ -12,7 +12,9 @@ import java.util.List;
 
 public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
+    private ChartState zoomedChartState = null;
     private long lastTime = System.nanoTime();
+    private DataProvider dataProvider = new JsonDataProvider();
 
     private final List<List<Vertex>> subCharts = new ArrayList<>();
     private final ArrayList<ArrayList<Vertex>> previewOriginalPoints = new ArrayList<>();

@@ -1,10 +1,14 @@
 package ru.kabylin.andrey.telegramcontest;
 
+import android.content.res.AssetManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kabylin.andrey.telegramcontest.chart.ChartState;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 

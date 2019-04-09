@@ -16,7 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ru.kabylin.andrey.telegramcontest.chart.ChartState;
-import ru.kabylin.andrey.telegramcontest.helpers.JsonUtils;
+import ru.kabylin.andrey.telegramcontest.chart.JsonDataProvider;
+import ru.kabylin.andrey.telegramcontest.helpers.ResourcesUtils;
 import ru.kabylin.andrey.telegramcontest.views.HolderFactory;
 import ru.kabylin.andrey.telegramcontest.views.RecyclerItemHolder;
 import ru.kabylin.andrey.telegramcontest.views.SingleItemRecyclerAdapter;
@@ -55,15 +56,9 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
 
     private void loadCharts() {
         try {
-            final String json = JsonUtils.readResourceJson(getResources(), R.raw.chart_data);
-
-            JSONArray jsonArray = new JSONArray(json);
-
-            for (int i = 3; i < /* jsonArray.length() */ 4; ++i) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                final ChartState chartState = ChartJsonLoader.loadCharts(jsonObject);
-                chartsStates.add(chartState);
-            }
+            JsonDataProvider dataProvider = new JsonDataProvider();
+//            chartsStates.add(dataProvider.getZoomed(getAssets(), 5, 1524960000000L));
+            dataProvider.getZoomed(getAssets(), 1, 1524960000000L);
 
             fillCharts();
         } catch (IOException | JSONException e) {

@@ -59,7 +59,7 @@ public final class ChartView extends View {
     private int chartMinimapBorderColor = Color.BLACK;
     private int chartBackgroundColor = Color.BLACK;
 
-    private ChartType chartType = ChartType.STACKED_AREA;
+    private ChartType chartType = ChartType.BARS;
     private ChartType zoomInChartType = ChartType.LINES;
 
     public ChartView(Context context) {
@@ -413,9 +413,7 @@ public final class ChartView extends View {
             }
 
             Collections.reverse(stack);
-            if (lastPoint != null) {
-                drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack);
-            }
+            drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack);
             lastPoint = point;
         }
     }
@@ -425,7 +423,7 @@ public final class ChartView extends View {
 
         for (StackedVertex vertex : stack) {
             stackedBarsPaint.setColor(vertex.color);
-            stackedBarsPaint.setAlpha((int) (vertex.opacity * 150f));
+            stackedBarsPaint.setAlpha((int) (vertex.opacity * 255f));
 
             if (vertex.y > bottom) {
                 continue;
