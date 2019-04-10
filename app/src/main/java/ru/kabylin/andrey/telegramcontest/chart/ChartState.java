@@ -167,7 +167,6 @@ public final class ChartState implements Parcelable {
         }
 
         ChartData chart = null;
-        boolean found = false;
 
         for (ChartData chartData : charts) {
             if (chartData.name.equals(name)) {
