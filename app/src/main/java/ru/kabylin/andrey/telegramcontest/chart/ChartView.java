@@ -59,7 +59,7 @@ public final class ChartView extends View {
     private int chartMinimapBorderColor = Color.BLACK;
     private int chartBackgroundColor = Color.BLACK;
 
-    private ChartType chartType = ChartType.BARS;
+    private ChartType chartType = ChartType.LINES;
     private ChartType zoomInChartType = ChartType.LINES;
 
     public ChartView(Context context) {

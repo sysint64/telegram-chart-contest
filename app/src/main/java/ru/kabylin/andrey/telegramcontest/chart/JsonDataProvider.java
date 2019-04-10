@@ -58,8 +58,6 @@ public class JsonDataProvider implements DataProvider {
     public ChartState getZoomed(AssetManager assetManager, int index, long time) throws IOException, JSONException {
         final Date date = new Date(time);
         final String day = (String) DateFormat.format("dd",   date);
-        final String month = (String) DateFormat.format("MM",   date);
-        final String year = (String) DateFormat.format("yyyy",   date);
 
         int dayNumber = Integer.valueOf(day);
         final List<Integer> days = new ArrayList<>();
@@ -73,7 +71,7 @@ public class JsonDataProvider implements DataProvider {
         boolean left = false;
 
         while (cursor <= borderRight) {
-            final String fileName = index + "/" + year + "-" + month + "/" + formatDay(cursor) + ".json";
+            final String fileName = getZoomedFileName(index, time, cursor);
 
             if (ResourcesUtils.isAssetExists(assetManager, fileName)) {
                 left = true;
@@ -92,8 +90,23 @@ public class JsonDataProvider implements DataProvider {
         }
 
         Collections.sort(days);
-        Log.d("DataProvider", days.toString());
-        return null;
+
+        final ChartState chartState = new ChartState();
+
+        for (final int currentDay : days) {
+            final String fileName = getZoomedFileName(index, time, currentDay);
+            loadToChartState(assetManager, chartState, fileName);
+        }
+
+        return chartState;
+    }
+
+    private String getZoomedFileName(int index, long time, int day) {
+        final Date date = new Date(time);
+        final String month = (String) DateFormat.format("MM",   date);
+        final String year = (String) DateFormat.format("yyyy",   date);
+
+        return index + "/" + year + "-" + month + "/" + formatDay(day) + ".json";
     }
 
     private String formatDay(int day) {
@@ -104,7 +117,36 @@ public class JsonDataProvider implements DataProvider {
         }
     }
 
-    private void loadToChartState(ChartState chartState) {
+    private void loadToChartState(AssetManager assetManager, ChartState chartState, String fileName) throws IOException, JSONException {
+        final String json = ResourcesUtils.readTextAsset(assetManager, fileName);
+        final JSONObject jsonObject = new JSONObject(json);
 
+        final JSONArray columns = jsonObject.getJSONArray("columns");
+
+        for (int i = 0; i < columns.length(); ++i) {
+            final JSONArray items = columns.getJSONArray(i);
+            final String name = items.getString(0);
+
+            if (name.equals("x")) {
+                final List<Long> xValues = new ArrayList<>();
+
+                for (int j = 1; j < items.length(); ++j) {
+                    xValues.add(items.getLong(j));
+                }
+
+                chartState.addX(xValues);
+            } else {
+                final List<Long> yValues = new ArrayList<>();
+
+                for (int j = 1; j < items.length(); ++j) {
+                    yValues.add(items.getLong(j));
+                }
+
+                final JSONObject colors = jsonObject.getJSONObject("colors");
+                final JSONObject names = jsonObject.getJSONObject("names");
+
+                chartState.addChart(colors.getString(name), names.getString(name), yValues);
+            }
+        }
     }
 }

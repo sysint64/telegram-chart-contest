@@ -154,19 +154,39 @@ public final class ChartState implements Parcelable {
         this.xValues.addAll(x);
     }
 
+    private int lastXLength = 0;
+
+    void addX(List<Long> x) {
+        lastXLength = this.xValues.size();
+        this.xValues.addAll(x);
+    }
+
     public void addChart(String color, String name, List<Long> y) {
-        if (xValues.size() != y.size()) {
+        if (xValues.size() != y.size() + lastXLength) {
             throw new AssertionError(xValues.size() + " != " + y.size());
         }
 
-        final ChartData chart = new ChartData(name, color);
+        ChartData chart = null;
+        boolean found = false;
+
+        for (ChartData chartData : charts) {
+            if (chartData.name.equals(name)) {
+                chart = chartData;
+                break;
+            }
+        }
+
+        if (chart == null) {
+            chart = new ChartData(name, color);
+        }
+
         final int parsedColor = Color.parseColor(color);
 
-        for (int i = 0; i < xValues.size(); ++i) {
-            final String yValue = y.get(i).toString();
+        for (int i = lastXLength; i < xValues.size(); ++i) {
+            final String yValue = y.get(i - lastXLength).toString();
             final String xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true);
 
-            chart.originalData.add(new Vertex(xValues.get(i), y.get(i), name, xValue, yValue, parsedColor));
+            chart.originalData.add(new Vertex(xValues.get(i), y.get(i - lastXLength), name, xValue, yValue, parsedColor));
             chart.minimapPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
             chart.previewPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
             chart.minimapInnerPreviewPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));

@@ -58,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
         try {
             JsonDataProvider dataProvider = new JsonDataProvider();
 //            chartsStates.add(dataProvider.getZoomed(getAssets(), 5, 1524960000000L));
-            dataProvider.getZoomed(getAssets(), 1, 1524960000000L);
+            final ChartState chartState = dataProvider.getZoomed(getAssets(), 1, 1524960000000L);
+            chartsStates.add(chartState);
 
             fillCharts();
         } catch (IOException | JSONException e) {
