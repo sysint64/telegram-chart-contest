@@ -1,8 +1,8 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 class Vertex {
-    long x = 0;
-    long y = 0;
+    float x = 0;
+    float y = 0;
     String title = "";
     String yValue = "";
     String xValue = "";

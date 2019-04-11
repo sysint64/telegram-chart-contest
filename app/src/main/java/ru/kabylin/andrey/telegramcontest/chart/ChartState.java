@@ -32,6 +32,18 @@ public final class ChartState implements Parcelable {
     float axisYOpacityChangeSpeed = 150f;
     float axisYOffsetChangeSpeed = 150f;
     float popupOpacityChangeSpeed = 150f;
+    float zoomOpacityChangeSpeed = 150f;
+    float zoomScaleChangeSpeed = 150f;
+
+    float zoomedInChartsOpacity = 0f;
+    float zoomedInChartsOpacityState = 0f;
+    float zoomedOutChartsOpacity = 1f;
+    float zoomedOutChartsOpacityState = 1f;
+
+    float zoomedInChartsScale = 0f;
+    float zoomedInChartsScaleState = 0f;
+    float zoomedOutChartsScale = 0f;
+    float zoomedOutChartsScaleState = 0f;
 
     float axisXDistance = MeasureUtils.convertDpToPixel(240);
     float axisXOffsetY = MeasureUtils.convertDpToPixel(20);

@@ -164,7 +164,7 @@ public final class ChartView extends View {
         switch (chartType) {
             case LINES_2Y:
             case LINES:
-                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP);
+                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP, state.zoomedOutChartsOpacity);
                 break;
 
             case BARS:
@@ -176,7 +176,7 @@ public final class ChartView extends View {
                 break;
 
             default:
-                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP);
+                drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP, state.zoomedOutChartsOpacity);
         }
     }
 
@@ -269,7 +269,7 @@ public final class ChartView extends View {
         switch (chartType) {
             case LINES_2Y:
             case LINES:
-                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW);
+                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW, state.zoomedOutChartsOpacity);
                 break;
 
             case BARS:
@@ -281,14 +281,20 @@ public final class ChartView extends View {
                 break;
 
             default:
-                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW);
+                drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW, state.zoomedOutChartsOpacity);
         }
     }
 
-    private void drawPaths(Canvas canvas, List<ChartData> charts, ChartData.SourceType source) {
+    private void drawPaths(Canvas canvas, List<ChartData> charts, ChartData.SourceType source, float opacity) {
         for (final ChartData chart : charts) {
+            final int alpha = (int) (chart.opacity * opacity * 255f);
+
+            if (alpha <= 0) {
+                continue;
+            }
+
             paint.setColor(chart.color);
-            paint.setAlpha((int) (chart.opacity * 255f));
+            paint.setAlpha(alpha);
 
             switch (source) {
                 case MINIMAP:
@@ -603,5 +609,13 @@ public final class ChartView extends View {
 
     public void setLayoutManager(ChartViewLayoutManager layoutManager) {
         userInteractor.setChartViewLayoutManager(layoutManager);
+    }
+
+    public void zoomIn() {
+       chartSolver.zoomIn();
+    }
+
+    public void zoomOut() {
+        chartSolver.zoomOut();
     }
 }

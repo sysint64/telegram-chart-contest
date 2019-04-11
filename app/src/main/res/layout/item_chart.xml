@@ -11,6 +11,25 @@
     tools:context=".MainActivity"
     tools:targetApi="lollipop">
 
+    <Button
+        android:id="@+id/buttonZoomOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Zoom out"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonZoomIn" />
+
+    <Button
+        android:id="@+id/buttonZoomIn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Zoom In"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chartView" />
+
     <ru.kabylin.andrey.telegramcontest.chart.ChartView
         android:id="@+id/chartView"
         android:layout_width="0dp"

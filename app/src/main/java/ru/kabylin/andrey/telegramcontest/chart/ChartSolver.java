@@ -32,4 +32,8 @@ public interface ChartSolver {
     void dropPopup(final float touchX, final float touchY);
 
     void hidePopup();
+
+    void zoomIn();
+
+    void zoomOut();
 }
