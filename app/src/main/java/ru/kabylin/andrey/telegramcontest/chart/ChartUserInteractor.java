@@ -8,4 +8,6 @@ interface ChartUserInteractor {
     boolean onTouchEvent(MotionEvent event);
 
     void setChartViewLayoutManager(ChartViewLayoutManager layoutManager);
+
+    void setChartSolver(ChartSolver chartSolver);
 }

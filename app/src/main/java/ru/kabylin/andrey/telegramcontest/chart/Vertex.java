@@ -7,11 +7,13 @@ class Vertex {
     String yValue = "";
     String xValue = "";
     int color = 0;
+    long originalX;
 
     Vertex() {
     }
 
-    Vertex(long x, long y, String title, String xValue, String value, int color) {
+    Vertex(long originalX, long x, long y, String title, String xValue, String value, int color) {
+        this.originalX = originalX;
         this.x = x;
         this.y = y;
         this.title = title;

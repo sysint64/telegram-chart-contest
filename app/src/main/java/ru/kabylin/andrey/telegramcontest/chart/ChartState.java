@@ -12,8 +12,10 @@ import java.util.Date;
 import java.util.List;
 
 public final class ChartState implements Parcelable {
+    ChartType chartType = ChartType.LINES;
+    int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
-    int minimapPreviewRight = (int) MeasureUtils.convertDpToPixel(80);
+    int minimapPreviewRight = minimapInitialPreviewSize;
     int minimapPreviewRenderResizeAreaSize = (int) MeasureUtils.convertDpToPixel(8);
     int minimapPreviewResizeAreaSize = (int) MeasureUtils.convertDpToPixel(20);
     int minimapPreviewBorderHeight = (int) MeasureUtils.convertDpToPixel(2);
@@ -32,18 +34,13 @@ public final class ChartState implements Parcelable {
     float axisYOpacityChangeSpeed = 150f;
     float axisYOffsetChangeSpeed = 150f;
     float popupOpacityChangeSpeed = 150f;
-    float zoomOpacityChangeSpeed = 150f;
-    float zoomScaleChangeSpeed = 150f;
+    float zoomOpacityChangeSpeed = 20f;
+    float zoomScaleChangeSpeed = 20f;
 
-    float zoomedInChartsOpacity = 0f;
-    float zoomedInChartsOpacityState = 0f;
-    float zoomedOutChartsOpacity = 1f;
-    float zoomedOutChartsOpacityState = 1f;
-
-    float zoomedInChartsScale = 0f;
-    float zoomedInChartsScaleState = 0f;
-    float zoomedOutChartsScale = 0f;
-    float zoomedOutChartsScaleState = 0f;
+    float chartsOpacity = 1f;
+    float chartsOpacityState = 1f;
+    float chartsScale = 0f;
+    float chartsScaleState = 0f;
 
     float axisXDistance = MeasureUtils.convertDpToPixel(240);
     float axisXOffsetY = MeasureUtils.convertDpToPixel(20);
@@ -197,10 +194,10 @@ public final class ChartState implements Parcelable {
             final String yValue = y.get(i - lastXLength).toString();
             final String xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true);
 
-            chart.originalData.add(new Vertex(xValues.get(i), y.get(i - lastXLength), name, xValue, yValue, parsedColor));
-            chart.minimapPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
-            chart.previewPointsPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
-            chart.minimapInnerPreviewPool.add(new Vertex(0, 0, name, xValue, yValue, parsedColor));
+            chart.originalData.add(new Vertex(xValues.get(i), xValues.get(i), y.get(i - lastXLength), name, xValue, yValue, parsedColor));
+            chart.minimapPointsPool.add(new Vertex(xValues.get(i), 0, 0, name, xValue, yValue, parsedColor));
+            chart.previewPointsPool.add(new Vertex(xValues.get(i), 0, 0, name, xValue, yValue, parsedColor));
+            chart.minimapInnerPreviewPool.add(new Vertex(xValues.get(i), 0, 0, name, xValue, yValue, parsedColor));
         }
 
         charts.add(chart);

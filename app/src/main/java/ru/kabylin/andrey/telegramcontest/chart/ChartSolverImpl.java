@@ -1,19 +1,22 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
+import android.content.res.AssetManager;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
+import org.json.JSONException;
+
 import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
-    private ChartState zoomedChartState = null;
     private long lastTime = System.nanoTime();
     private DataProvider dataProvider = new JsonDataProvider();
     private Vertex selectedVertex = null;
@@ -92,8 +95,13 @@ public class ChartSolverImpl implements ChartSolver {
             final Vertex originalVertex = chartData.originalData.get(i);
             final Vertex minimapVertex = chartData.minimapPointsPool.get(i);
 
-            final float offsetSize = chartState.zoomedOutChartsScale * (30f * 60f * 60f * 24f * 1000f * 10f);
-            final float position = ((float) chartState.minimapPreviewLeft + (chartState.minimapPreviewSize() / 2f)) / ((float) chartState.minimapRect.width());
+            final float offsetSize = chartState.chartsScale * (xLast - x0);
+            float position = ((float) chartState.minimapPreviewLeft + (chartState.minimapPreviewSize() / 2f)) / ((float) chartState.minimapRect.width());
+
+//            if (chartState.previewRect != null) {
+//                position += ((float) chartState.popup.left) / (float) chartState.previewRect.width();
+//            }
+
             projectVertex(originalVertex, minimapVertex, rect, x0 + (offsetSize * position), y0, xLast - (offsetSize) + (offsetSize * position), yMax);
             chartData.minimapPoints.add(minimapVertex);
         }
@@ -195,6 +203,7 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     private void projectVertex(Vertex vertex, Vertex to, Rect rect, float x0, float y0, float xMax, float yMax) {
+        to.originalX = vertex.originalX;
         to.x = (long) projectX(vertex.x, rect, x0, xMax);
         to.y = (long) projectY(vertex.y, rect, y0, yMax);
     }
@@ -216,6 +225,7 @@ public class ChartSolverImpl implements ChartSolver {
         for (int i = 0; i < chartData.originalData.size(); ++i) {
             final Vertex point = chartData.minimapInnerPreviewPool.get(i);
 
+            point.originalX = chartData.originalData.get(i).originalX;
             point.x = chartData.minimapPoints.get(i).x;
             point.y = chartData.originalData.get(i).y;
 
@@ -422,30 +432,16 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.popupOpacityChangeSpeed
         );
 
-        chartState.zoomedInChartsScale = MathUtils.interpTo(
-                chartState.zoomedInChartsScale,
-                chartState.zoomedInChartsScaleState,
+        chartState.chartsScale = MathUtils.interpTo(
+                chartState.chartsScale,
+                chartState.chartsScaleState,
                 deltaTime,
                 chartState.zoomScaleChangeSpeed
         );
 
-        chartState.zoomedOutChartsScale = MathUtils.interpTo(
-                chartState.zoomedOutChartsScale,
-                chartState.zoomedOutChartsScaleState,
-                deltaTime,
-                chartState.zoomScaleChangeSpeed
-        );
-
-        chartState.zoomedInChartsOpacity = MathUtils.interpTo(
-                chartState.zoomedInChartsOpacity,
-                chartState.zoomedInChartsOpacityState,
-                deltaTime,
-                chartState.zoomOpacityChangeSpeed
-        );
-
-        chartState.zoomedOutChartsOpacity = MathUtils.interpTo(
-                chartState.zoomedOutChartsOpacity,
-                chartState.zoomedOutChartsOpacityState,
+        chartState.chartsOpacity = MathUtils.interpTo(
+                chartState.chartsOpacity,
+                chartState.chartsOpacityState,
                 deltaTime,
                 chartState.zoomOpacityChangeSpeed
         );
@@ -768,6 +764,7 @@ public class ChartSolverImpl implements ChartSolver {
 
                     Vertex intersectPoint = chartState.popupIntersectPoints.get(i);
 
+                    intersectPoint.originalX = vertex.originalX;
                     intersectPoint.x = vertex.x;
                     intersectPoint.y = vertex.y;
                 } else {
@@ -799,21 +796,49 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     @Override
-    public void zoomIn() {
+    public ChartState zoomIn(AssetManager assetManager) {
+        if (selectedVertex == null) {
+            return null;
+        }
+
         chartState.popup.hide();
 
-        chartState.zoomedOutChartsScaleState = 1f;
-        chartState.zoomedOutChartsOpacityState = 0f;
-        chartState.zoomedInChartsScaleState = 1f;
-        chartState.zoomedInChartsOpacityState = 1f;
+        chartState.chartsScaleState = 1f;
+        chartState.chartsOpacityState = 0f;
+
+        try {
+            Log.d("ChartView", "SUCCESS LOADED NEW DATA");
+            ChartState zoomedState = dataProvider.getZoomed(assetManager, 1, (long) selectedVertex.originalX);
+
+            zoomedState.chartsOpacity = 0f;
+            zoomedState.chartsOpacityState = 0f;
+            zoomedState.chartsScale = 1f;
+            zoomedState.chartsScaleState = 1f;
+            zoomedState.minimapPreviewLeft = chartState.minimapRect.width() / 2 - zoomedState.minimapPreviewSize() / 2;
+            zoomedState.minimapPreviewRight = zoomedState.minimapPreviewLeft + zoomedState.minimapInitialPreviewSize;
+            zoomedState.chartType = ChartType.LINES_2Y;
+
+            return zoomedState;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public void zoomIn() {
+        chartState.popup.hide();
+        chartState.chartsScaleState = 1f;
+        chartState.chartsOpacityState = 0f;
     }
 
     @Override
     public void zoomOut() {
         chartState.popup.hide();
-        chartState.zoomedOutChartsScaleState = 0f;
-        chartState.zoomedOutChartsOpacityState = 1f;
-        chartState.zoomedInChartsScaleState = 0f;
-        chartState.zoomedInChartsOpacityState = 0f;
+        chartState.chartsScaleState = 0f;
+        chartState.chartsOpacityState = 1f;
     }
 }

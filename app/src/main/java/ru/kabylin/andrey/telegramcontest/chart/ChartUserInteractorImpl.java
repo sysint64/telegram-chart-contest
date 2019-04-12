@@ -19,7 +19,7 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         PREVIEW_RESIZE_RIGHT
     }
 
-    private final ChartSolver chartSolver;
+    private ChartSolver chartSolver;
     private State[] state = new State[]{State.NONE, State.NONE};
 
     private float[] onActionDownTouchX = new float[2];
@@ -183,5 +183,10 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
             default:
                 return true;
         }
+    }
+
+    @Override
+    public void setChartSolver(ChartSolver chartSolver) {
+        this.chartSolver = chartSolver;
     }
 }

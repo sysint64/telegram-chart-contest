@@ -1,6 +1,8 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
+import android.content.res.AssetManager;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 
 public interface ChartSolver {
     ChartState getState();
@@ -32,6 +34,9 @@ public interface ChartSolver {
     void dropPopup(final float touchX, final float touchY);
 
     void hidePopup();
+
+    @Nullable
+    ChartState zoomIn(AssetManager assetManager);
 
     void zoomIn();
 
