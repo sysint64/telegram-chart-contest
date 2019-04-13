@@ -103,6 +103,10 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     }
 
     public void setChartState(ChartState chartState) {
+        chartState.normalizeDataToPercentage();
+        chartState.sortStackedArea();
+        chartState.yAxisLines = 4;
+
         chartRendererZoomedOut.setChartState(chartState);
         minimapPreviewLeftState = chartState.minimapPreviewLeft;
         minimapPreviewRightState = chartState.minimapPreviewRight;

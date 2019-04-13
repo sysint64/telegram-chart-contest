@@ -9,12 +9,13 @@ import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public final class ChartState implements Parcelable {
-    ChartType chartType = ChartType.BARS;
+    ChartType chartType = ChartType.STACKED_AREA;
     int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
     int minimapPreviewRight = minimapInitialPreviewSize;
@@ -40,6 +41,7 @@ public final class ChartState implements Parcelable {
     float popupOpacityChangeSpeed = 150f;
     float zoomOpacityChangeSpeed = 50f;
     float zoomScaleChangeSpeed = 50f;
+    int yAxisLines = 6;
 
     float chartsOpacity = 1f;
     float chartsOpacityState = 1f;
@@ -226,6 +228,59 @@ public final class ChartState implements Parcelable {
         }
 
         this.xValues.addAll(x);
+    }
+
+    void normalizeDataToPercentage() {
+        for (int i = 0; i < xValues.size(); ++i) {
+            float max = 0;
+
+            for (final ChartData chart : charts) {
+                Vertex vertex = chart.originalData.get(i);
+
+                if (max < vertex.y) {
+                    max = vertex.y;
+                }
+            }
+
+            for (final ChartData chart : charts) {
+                final Vertex vertex = chart.originalData.get(i);
+                final float percents = (vertex.y / max) * 100f;
+                final String title = String.valueOf(Math.round(percents)) + "%";
+                vertex.y = percents;
+
+                chart.originalData.get(i).yValue = title;
+                chart.minimapPointsPool.get(i).yValue = title;
+                chart.previewPointsPool.get(i).yValue = title;
+                chart.minimapInnerPreviewPool.get(i).yValue = title;
+            }
+
+            if (i == 0) {
+                continue;
+            }
+
+            final Vertex prevTopVertex = charts.get(0).originalData.get(i - 1);
+            final Vertex vertex = charts.get(0).originalData.get(i);
+
+            for (final ChartData chart : charts) {
+                if (vertex.y < chart.originalData.get(i).y) {
+                    vertex.y = prevTopVertex.y;
+                }
+            }
+        }
+    }
+
+    void sortStackedArea() {
+        for (final ChartData chart : charts) {
+            float sum = 0;
+
+            for (final Vertex vertex : chart.originalData) {
+                sum += vertex.y;
+            }
+
+            chart.weight = sum;
+        }
+
+        Collections.sort(charts);
     }
 
     private int lastXLength = 0;

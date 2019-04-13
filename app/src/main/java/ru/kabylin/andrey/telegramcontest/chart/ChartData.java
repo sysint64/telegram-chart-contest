@@ -5,9 +5,10 @@ import android.graphics.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartData {
+public class ChartData implements Comparable<ChartData> {
     public final String name;
     public final int color;
+    public float weight = 0;
     final List<Vertex> originalData = new ArrayList<>();
     final List<Vertex> minimapInnerPreviewPool = new ArrayList<>();
     final List<Vertex> minimapPointsPool = new ArrayList<>();
@@ -31,5 +32,10 @@ public class ChartData {
     enum SourceType {
         MINIMAP,
         PREVIEW
+    }
+
+    @Override
+    public int compareTo(ChartData o) {
+        return (int) (o.weight - this.weight);
     }
 }

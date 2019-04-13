@@ -608,7 +608,7 @@ public class ChartSolverImpl implements ChartSolver {
         boolean isInit = input.axisYIsInit;
 
         if (input.yAxisCurrent.isEmpty()) {
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < chartState.yAxisLines - 1; ++i) {
                 input.yAxisCurrent.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
                 input.yAxisPast.add(new AxisVertex(0, 0, "-", 0f, 0f, null, 0f, 0f));
             }
@@ -619,7 +619,7 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         if (Math.floor(input.lastStatePreviewMaxY) != Math.floor(input.statePreviewMaxY)) {
-            float deltaMaxY = ((rect.bottom - rect.top) / 5f) * ((input.lastStatePreviewMaxY - input.statePreviewMaxY) / Math.max(input.lastStatePreviewMaxY, input.statePreviewMaxY));
+            float deltaMaxY = ((rect.bottom - rect.top) / (float) (chartState.yAxisLines - 1)) * ((input.lastStatePreviewMaxY - input.statePreviewMaxY) / Math.max(input.lastStatePreviewMaxY, input.statePreviewMaxY));
 
             if (Math.abs(deltaMaxY) < chartState.minAxisYDelta) {
                 deltaMaxY = 0;
@@ -651,8 +651,8 @@ public class ChartSolverImpl implements ChartSolver {
                 }
             }
 
-            final long delta = Math.round((rect.bottom - rect.top) / 6f);
-            final long deltaValue = Math.round((input.statePreviewMaxY / 6f));
+            final long delta = Math.round((rect.bottom - rect.top) / (float) chartState.yAxisLines);
+            final long deltaValue = Math.round((input.statePreviewMaxY / (float) chartState.yAxisLines));
 
             long current = rect.bottom;
             long currentValue = 0;

@@ -10,7 +10,7 @@
     <color name="lightThemeTitleText">#3896d4</color>
     <color name="lightThemeChartGrid">#000000</color>
     <color name="lightThemeChartPopup">#f1f1f2</color>
-    <color name="lightThemeChartPopupLine">#e5ebef</color>
+    <color name="lightThemeChartPopupLine">#1A000000</color>
     <color name="lightThemeChartPopupTitle">#222222</color>
     <color name="lightThemeChartMinimapOverlay">#B3E5EBEF</color>
     <color name="lightThemeChartMinimapBorder">#4D3896D4</color>

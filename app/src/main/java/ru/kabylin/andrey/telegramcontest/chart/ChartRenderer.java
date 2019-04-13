@@ -33,7 +33,7 @@ public final class ChartRenderer implements OnPopupEventsListener {
     private float barsOpacityState = 1f;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private float barsOpacityChangeSpeed = 150f;
+    private float barsOpacityChangeSpeed = 100f;
 
     ChartRenderer(ChartStyle style) {
         this.style = style;
@@ -363,11 +363,13 @@ public final class ChartRenderer implements OnPopupEventsListener {
             if (opacity > 0 && y <= previewRect.bottom) {
                 paint.setTextAlign(Paint.Align.LEFT);
 
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setColor(style.chartBackgroundColor);
-                paint.setAlpha(opacity);
-                paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
-                canvas.drawText(vertex.title, vertex.x, y, paint);
+                if (state.chartType == ChartType.LINES || state.chartType == ChartType.LINES_2Y) {
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setColor(style.chartBackgroundColor);
+                    paint.setAlpha(opacity);
+                    paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
+                    canvas.drawText(vertex.title, vertex.x, y, paint);
+                }
 
                 paint.setStyle(Paint.Style.FILL);
 
@@ -399,11 +401,13 @@ public final class ChartRenderer implements OnPopupEventsListener {
             if (alpha > 0 && y <= previewRect.bottom) {
                 paint.setTextAlign(Paint.Align.RIGHT);
 
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setColor(style.chartBackgroundColor);
-                paint.setAlpha(alpha);
-                paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
-                canvas.drawText(vertex.title, vertex.x, y, paint);
+                if (state.chartType == ChartType.LINES || state.chartType == ChartType.LINES_2Y) {
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setColor(style.chartBackgroundColor);
+                    paint.setAlpha(alpha);
+                    paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
+                    canvas.drawText(vertex.title, vertex.x, y, paint);
+                }
 
                 paint.setStyle(Paint.Style.FILL);
 
