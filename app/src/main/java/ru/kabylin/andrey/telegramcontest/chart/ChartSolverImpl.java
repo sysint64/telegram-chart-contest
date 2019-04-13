@@ -768,6 +768,7 @@ public class ChartSolverImpl implements ChartSolver {
                     intersectPoint.originalX = vertex.originalX;
                     intersectPoint.x = vertex.x;
                     intersectPoint.y = vertex.y;
+                    chartState.intersectX = vertex.x;
                 } else {
                     return;
                 }
@@ -808,7 +809,7 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.chartsOpacityState = 0f;
 
         try {
-            ChartState zoomedState = dataProvider.getZoomed(assetManager, 1, selectedVertex.originalX);
+            ChartState zoomedState = dataProvider.getZoomed(assetManager, chartState.chartIndex, selectedVertex.originalX);
 
             zoomedState.chartsOpacity = 0f;
             zoomedState.chartsOpacityState = 0f;
@@ -816,7 +817,7 @@ public class ChartSolverImpl implements ChartSolver {
             zoomedState.chartsScaleState = 1f;
             zoomedState.minimapPreviewLeft = chartState.minimapRect.width() / 2 - zoomedState.minimapPreviewSize() / 2;
             zoomedState.minimapPreviewRight = zoomedState.minimapPreviewLeft + zoomedState.minimapInitialPreviewSize;
-            zoomedState.chartType = ChartType.BARS;
+            zoomedState.chartType = ChartType.LINES;
 
             return zoomedState;
         } catch (IOException e) {

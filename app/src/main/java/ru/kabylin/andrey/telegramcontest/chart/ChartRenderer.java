@@ -7,12 +7,12 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
-public final class ChartRenderer {
+public final class ChartRenderer implements OnPopupEventsListener {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stackedBarsPaint = new Paint();
     private final Paint stackedAreaPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -29,6 +29,11 @@ public final class ChartRenderer {
 
     private final ChartStyle style;
     private final Path stackedAreaPath = new Path();
+    private float barsOpacity = 1f;
+    private float barsOpacityState = 1f;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private float barsOpacityChangeSpeed = 150f;
 
     ChartRenderer(ChartStyle style) {
         this.style = style;
@@ -36,6 +41,7 @@ public final class ChartRenderer {
 
     public void setChartState(ChartState chartState) {
         chartSolver.setChartState(chartState);
+        chartState.popup.setOnPopupEventsListener(this);
         isInit = true;
     }
 
@@ -50,15 +56,35 @@ public final class ChartRenderer {
         }
 
         drawMinimap(canvas);
-//        drawMinimapPreview(canvas);
-        drawPopupUnderLine(canvas);
         drawPreview(canvas);
+        drawPopupUnderLine(canvas);
         drawIntersectPoints(canvas);
         drawAxisXLabels(canvas);
         drawAxisYLabels(canvas);
         drawAxisY2Labels(canvas);
         drawAxisYGrid(canvas);
         drawPopup(canvas);
+    }
+
+    void onProgress(float deltaTime) {
+        chartSolver.onProgress(deltaTime);
+
+        barsOpacity = MathUtils.interpTo(
+                barsOpacity,
+                barsOpacityState,
+                deltaTime,
+                barsOpacityChangeSpeed
+        );
+    }
+
+    @Override
+    public void onPopupDrop() {
+        barsOpacityState = 0.5f;
+    }
+
+    @Override
+    public void onPopupHide() {
+        barsOpacityState = 1f;
     }
 
     private int chartsAlpha(float opacity) {
@@ -71,7 +97,7 @@ public final class ChartRenderer {
         return (int) (state.chartsOpacity * 255f);
     }
 
-    private boolean drawMinimap(Canvas canvas) {
+    private void drawMinimap(Canvas canvas) {
         minimapRect.set(
                 /* left */ 0,
                 /* top*/ height - (int) MeasureUtils.convertDpToPixel(50),
@@ -99,7 +125,7 @@ public final class ChartRenderer {
                 break;
 
             case BARS:
-                drawStackedBars(canvas, minimapRect, state.charts, ChartData.SourceType.MINIMAP);
+                drawStackedBars(canvas, minimapRect, state.charts, ChartData.SourceType.MINIMAP, 1f);
                 break;
 
             case STACKED_AREA:
@@ -109,11 +135,9 @@ public final class ChartRenderer {
             default:
                 drawPaths(canvas, state.charts, ChartData.SourceType.MINIMAP, state.chartsOpacity);
         }
-
-        return alpha != 0;
     }
 
-    private boolean drawPreview(Canvas canvas) {
+    private void drawPreview(Canvas canvas) {
         previewRect.set(
                 /* left */ 0,
                 /* top*/ 0,
@@ -138,7 +162,7 @@ public final class ChartRenderer {
                 break;
 
             case BARS:
-                drawStackedBars(canvas, previewRect, state.charts, ChartData.SourceType.PREVIEW);
+                drawStackedBars(canvas, previewRect, state.charts, ChartData.SourceType.PREVIEW, barsOpacity);
                 break;
 
             case STACKED_AREA:
@@ -148,8 +172,6 @@ public final class ChartRenderer {
             default:
                 drawPaths(canvas, state.charts, ChartData.SourceType.PREVIEW, state.chartsOpacity);
         }
-
-        return chartsAlpha() != 0;
     }
 
     private void drawPaths(Canvas canvas, List<ChartData> charts, ChartData.SourceType source, float opacity) {
@@ -230,9 +252,8 @@ public final class ChartRenderer {
         canvas.drawPath(stackedAreaPath, paint);
     }
 
-    private void drawStackedBars(Canvas canvas, Rect previewRect, List<ChartData> charts, ChartData.SourceType source) {
+    private void drawStackedBars(Canvas canvas, Rect previewRect, List<ChartData> charts, ChartData.SourceType source, float opacity) {
         List<StackedVertex> stack = new ArrayList<>();
-        List<StackedVertex> lastStack = new ArrayList<>();
 
         Vertex lastPoint = null;
         final List<Vertex> points;
@@ -277,6 +298,7 @@ public final class ChartRenderer {
                 }
 
                 stack.add(
+                        0,
                         new StackedVertex(
                                 value,
                                 chart.opacity,
@@ -285,18 +307,22 @@ public final class ChartRenderer {
                 );
             }
 
-            Collections.reverse(stack);
-            drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack);
+            drawStackedBar(canvas, previewRect, lastPoint.x, point.x, stack, opacity);
             lastPoint = point;
         }
     }
 
-    private void drawStackedBar(Canvas canvas, Rect previewRect, float x1, float x2, List<StackedVertex> stack) {
+    private void drawStackedBar(Canvas canvas, Rect previewRect, float x1, float x2, List<StackedVertex> stack, float opacity) {
         float bottom = previewRect.bottom;
+        final ChartState state = chartSolver.getState();
+
+        if (state.intersectX == x1) {
+            opacity = 1f;
+        }
 
         for (StackedVertex vertex : stack) {
             stackedBarsPaint.setColor(vertex.color);
-            stackedBarsPaint.setAlpha(chartsAlpha(vertex.opacity));
+            stackedBarsPaint.setAlpha(chartsAlpha(vertex.opacity * opacity));
 
             if (vertex.y > bottom) {
                 continue;
@@ -308,7 +334,7 @@ public final class ChartRenderer {
         }
     }
 
-    private boolean drawAxisXLabels(Canvas canvas) {
+    private void drawAxisXLabels(Canvas canvas) {
         chartSolver.calculateAxisXPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
@@ -324,11 +350,9 @@ public final class ChartRenderer {
                 canvas.drawText(vertex.title, vertex.x, vertex.y, paint);
             }
         }
-
-        return chartsAlpha() != 0;
     }
 
-    private boolean drawAxisYLabels(Canvas canvas) {
+    private void drawAxisYLabels(Canvas canvas) {
         final ChartState state = chartSolver.getState();
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
 
@@ -357,15 +381,13 @@ public final class ChartRenderer {
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
         }
-
-        return chartsAlpha() != 0;
     }
 
-    private boolean drawAxisY2Labels(Canvas canvas) {
+    private void drawAxisY2Labels(Canvas canvas) {
         final ChartState state = chartSolver.getState();
 
         if (state.chartType != ChartType.LINES_2Y) {
-            return false;
+            return;
         }
 
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
@@ -395,11 +417,9 @@ public final class ChartRenderer {
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
         }
-
-        return chartsAlpha() != 0;
     }
 
-    private boolean drawAxisYGrid(Canvas canvas) {
+    private void drawAxisYGrid(Canvas canvas) {
         chartSolver.calculateAxisYPoints(previewRect);
         final ChartState state = chartSolver.getState();
 
@@ -421,29 +441,34 @@ public final class ChartRenderer {
                 canvas.drawLine(previewRect.left, y, previewRect.right, y, paint);
             }
         }
-
-        return chartsAlpha() != 0;
     }
 
-    private boolean drawPopupUnderLine(Canvas canvas) {
+    private void drawPopupUnderLine(Canvas canvas) {
         final ChartState state = chartSolver.getState();
 
+        if (state.chartType == ChartType.BARS) {
+            return;
+        }
+
         if (!state.popup.isVisible) {
-            return false;
+            return;
         }
 
         paint.setStrokeWidth(MeasureUtils.convertDpToPixel(1));
         paint.setColor(style.chartPopupLineColor);
 
         canvas.drawLine(state.popup.left, previewRect.top, state.popup.left, previewRect.bottom, paint);
-        return true;
     }
 
-    private boolean drawIntersectPoints(Canvas canvas) {
+    private void drawIntersectPoints(Canvas canvas) {
         final ChartState state = chartSolver.getState();
 
+        if (state.chartType == ChartType.BARS) {
+            return;
+        }
+
         if (!state.popup.isVisible) {
-            return false;
+            return;
         }
 
         for (int i = 0; i < state.charts.size(); ++i) {
@@ -463,16 +488,13 @@ public final class ChartRenderer {
         }
 
         paint.setStyle(Paint.Style.FILL);
-        return true;
     }
 
-    private boolean drawPopup(Canvas canvas) {
+    private void drawPopup(Canvas canvas) {
         final ChartState state = chartSolver.getState();
 
         state.popup.chartColorPopupColor = style.chartColorPopupColor;
         state.popup.chartColorPopupTitleColor = style.chartColorPopupTitleColor;
         state.popup.draw(canvas, state.previewRect);
-
-        return true;
     }
 }

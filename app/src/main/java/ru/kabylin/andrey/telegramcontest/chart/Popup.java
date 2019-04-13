@@ -1,6 +1,8 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.*;
+import android.support.annotation.Nullable;
+
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 import java.util.ArrayList;
@@ -14,6 +16,13 @@ final class Popup {
     private final List<PopupItem> items = new ArrayList<>();
     private String title = "Sat, Feb 24";
     boolean isVisible = false;
+
+    @Nullable
+    private OnPopupEventsListener eventsListener = null;
+
+    void setOnPopupEventsListener(OnPopupEventsListener eventsListener) {
+        this.eventsListener = eventsListener;
+    }
 
     Popup() {
         items.add(new PopupItem(Color.GREEN, "122", "#0"));
@@ -46,11 +55,19 @@ final class Popup {
         this.stateOpacity = 1f;
         this.left = (int) x;
         this.isVisible = true;
+
+        if (eventsListener != null) {
+            eventsListener.onPopupDrop();
+        }
     }
 
     void hide() {
         this.stateOpacity = 0f;
         this.isVisible = false;
+
+        if (eventsListener != null) {
+            eventsListener.onPopupHide();
+        }
     }
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);

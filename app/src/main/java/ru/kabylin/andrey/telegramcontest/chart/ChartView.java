@@ -116,11 +116,11 @@ public final class ChartView extends View implements OnChartStateRetrieved {
         float deltaTime = (time - lastTime) / 1000000f / 10000f;
 
         if (chartRendererZoomedOut.isInit) {
-            chartRendererZoomedOut.chartSolver.onProgress(deltaTime);
+            chartRendererZoomedOut.onProgress(deltaTime);
         }
 
         if (chartRendererZoomedIn.isInit) {
-            chartRendererZoomedIn.chartSolver.onProgress(deltaTime);
+            chartRendererZoomedIn.onProgress(deltaTime);
         }
 
         if (currentChartSolver != null) {
@@ -262,7 +262,11 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     public void zoomOut() {
         currentChartSolver = chartRendererZoomedOut.chartSolver;
         chartRendererZoomedOut.chartSolver.zoomOut();
-        chartRendererZoomedIn.chartSolver.zoomIn();
+
+        if (chartRendererZoomedIn.isInit) {
+            chartRendererZoomedIn.chartSolver.zoomIn();
+        }
+
         userInteractor.setChartSolver(currentChartSolver);
     }
 }

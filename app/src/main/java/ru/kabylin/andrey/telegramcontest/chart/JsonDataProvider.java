@@ -17,7 +17,10 @@ import ru.kabylin.andrey.telegramcontest.helpers.ResourcesUtils;
 public class JsonDataProvider implements DataProvider {
     @Override
     public ChartState getOverview(AssetManager assetManager, int index) throws IOException, JSONException {
-        return loadChartStateFromFile(assetManager, index + "/overview.json", false);
+        ChartState chartState = loadChartStateFromFile(assetManager, index + "/overview.json", false);
+        chartState.chartIndex = index;
+
+        return chartState;
     }
 
     @Override
@@ -28,7 +31,10 @@ public class JsonDataProvider implements DataProvider {
         final String year = (String) DateFormat.format("yyyy",   date);
         final String fileName = index + "/" + year + "-" + month + "/" + day + ".json";
 
-        return loadChartStateFromFile(assetManager, fileName, true);
+        ChartState chartState = loadChartStateFromFile(assetManager, fileName, true);
+        chartState.chartIndex = index;
+
+        return chartState;
     }
 
     private ChartState loadChartStateFromFile(AssetManager assetManager, String fileName, boolean showTime) throws IOException, JSONException {

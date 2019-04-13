@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class ChartState implements Parcelable {
-    ChartType chartType = ChartType.LINES;
+    ChartType chartType = ChartType.BARS;
     int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
     int minimapPreviewRight = minimapInitialPreviewSize;
@@ -29,6 +29,7 @@ public final class ChartState implements Parcelable {
     float previewMaxY = 0f;
     float previewMaxY2 = 0f;
     final boolean showTime;
+    int chartIndex = 1;
 
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
@@ -60,6 +61,7 @@ public final class ChartState implements Parcelable {
 
     public List<ChartData> charts = new ArrayList<>();
     List<Vertex> popupIntersectPoints = new ArrayList<>();
+    float intersectX = 0;
 
     final List<AxisVertex> xAxis = new ArrayList<>();
 
