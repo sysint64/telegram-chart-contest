@@ -21,7 +21,7 @@ public interface ChartSolver {
 
     void setMinimapRight(final float newRight);
 
-    void onProgress();
+    void onProgress(final float deltaTime);
 
     boolean setChartVisibilityByName(final String name, final boolean visibility);
 

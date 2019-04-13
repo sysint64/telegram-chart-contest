@@ -22,14 +22,8 @@ public final class ChartRenderer {
 
     private Rect minimapRect = new Rect();
     private Rect previewRect = new Rect();
-    private Rect minimapOverlayLeftRect = new Rect();
-    private Rect minimapOverlayRightRect = new Rect();
-    private Rect minimapBorderLeftRect = new Rect();
-    private Rect minimapBorderRightRect = new Rect();
-    private Rect minimapBorderTopRect = new Rect();
-    private Rect minimapBorderBottomRect = new Rect();
 
-    private boolean isInit = false;
+    boolean isInit = false;
     private int width;
     private int height;
 
@@ -45,35 +39,26 @@ public final class ChartRenderer {
         isInit = true;
     }
 
-    boolean onDraw(Canvas canvas, int width, int height) {
+    void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+    }
 
+    void onDraw(Canvas canvas) {
         if (!isInit) {
-            return false;
+            return;
         }
 
-        if (chartsAlpha() == 0) {
-            chartSolver.onProgress();
-            return false;
-        }
-
-        boolean isRender;
-
-        isRender = drawMinimap(canvas);
-        isRender = isRender | drawMinimapPreview(canvas);
-        isRender = isRender | drawMinimapPreview(canvas);
-        isRender = isRender | drawPopupUnderLine(canvas);
-        isRender = isRender | drawPreview(canvas);
-        isRender = isRender | drawIntersectPoints(canvas);
-        isRender = isRender | drawAxisXLabels(canvas);
-        isRender = isRender | drawAxisYLabels(canvas);
-        isRender = isRender | drawAxisY2Labels(canvas);
-        isRender = isRender | drawAxisYGrid(canvas);
-        isRender = isRender | drawPopup(canvas);
-
-        chartSolver.onProgress();
-        return isRender;
+        drawMinimap(canvas);
+//        drawMinimapPreview(canvas);
+        drawPopupUnderLine(canvas);
+        drawPreview(canvas);
+        drawIntersectPoints(canvas);
+        drawAxisXLabels(canvas);
+        drawAxisYLabels(canvas);
+        drawAxisY2Labels(canvas);
+        drawAxisYGrid(canvas);
+        drawPopup(canvas);
     }
 
     private int chartsAlpha(float opacity) {
@@ -84,19 +69,6 @@ public final class ChartRenderer {
     private int chartsAlpha() {
         final ChartState state = chartSolver.getState();
         return (int) (state.chartsOpacity * 255f);
-    }
-
-    boolean onDrawCharts(Canvas canvas, int width, int height) {
-        this.width = width;
-        this.height = height;
-
-        if (!isInit) {
-            return false;
-        }
-
-        drawPreview(canvas);
-        chartSolver.onProgress();
-        return true;
     }
 
     private boolean drawMinimap(Canvas canvas) {
@@ -139,60 +111,6 @@ public final class ChartRenderer {
         }
 
         return alpha != 0;
-    }
-
-    private boolean drawMinimapPreview(Canvas canvas) {
-        final ChartState state = chartSolver.getState();
-        final Rect previewRect = state.getMinimapPreviewRect();
-
-        // Overlay
-        paint.setColor(style.chartMinimapOverlayColor);
-
-        minimapOverlayLeftRect.set(minimapRect.left, minimapRect.top, previewRect.left, minimapRect.bottom);
-        minimapOverlayRightRect.set(previewRect.right, minimapRect.top, minimapRect.right, minimapRect.bottom);
-
-        canvas.drawRect(minimapOverlayLeftRect, paint);
-        canvas.drawRect(minimapOverlayRightRect, paint);
-
-        // Border
-        paint.setColor(style.chartMinimapBorderColor);
-//        final int alpha = chartsAlpha();
-//        paint.setAlpha(alpha);
-
-        minimapBorderLeftRect.set(
-                previewRect.left,
-                previewRect.top,
-                previewRect.left + state.minimapPreviewRenderResizeAreaSize,
-                previewRect.bottom
-        );
-
-        minimapBorderRightRect.set(
-                previewRect.right - state.minimapPreviewRenderResizeAreaSize,
-                previewRect.top,
-                previewRect.right,
-                previewRect.bottom
-        );
-
-        minimapBorderTopRect.set(
-                previewRect.left + state.minimapPreviewRenderResizeAreaSize,
-                previewRect.top,
-                previewRect.right - state.minimapPreviewRenderResizeAreaSize,
-                previewRect.top + state.minimapPreviewBorderHeight
-        );
-
-        minimapBorderBottomRect.set(
-                previewRect.left + state.minimapPreviewRenderResizeAreaSize,
-                previewRect.bottom - state.minimapPreviewBorderHeight,
-                previewRect.right - state.minimapPreviewRenderResizeAreaSize,
-                previewRect.bottom
-        );
-
-        canvas.drawRect(minimapBorderLeftRect, paint);
-        canvas.drawRect(minimapBorderRightRect, paint);
-        canvas.drawRect(minimapBorderTopRect, paint);
-        canvas.drawRect(minimapBorderBottomRect, paint);
-
-        return true;
     }
 
     private boolean drawPreview(Canvas canvas) {
@@ -260,7 +178,7 @@ public final class ChartRenderer {
     private void drawStackedAreas(Canvas canvas, List<ChartData> charts, ChartData.SourceType source, Paint paint) {
         for (final ChartData chart : charts) {
             paint.setColor(chart.color);
-            paint.setAlpha((int) (chart.opacity * 255f));
+            paint.setAlpha(chartsAlpha(chart.opacity));
 
             switch (source) {
                 case MINIMAP:
@@ -347,15 +265,15 @@ public final class ChartRenderer {
 
                 switch (source) {
                     case MINIMAP:
-                        value = (float) chart.minimapPoints.get(i).y;
+                        value = chart.minimapPoints.get(i).y;
                         break;
 
                     case PREVIEW:
-                        value = (float) chart.previewPoints.get(i).y;
+                        value = chart.previewPoints.get(i).y;
                         break;
 
                     default:
-                        value = (float) chart.previewPoints.get(i).y;
+                        value = chart.previewPoints.get(i).y;
                 }
 
                 stack.add(
@@ -378,7 +296,7 @@ public final class ChartRenderer {
 
         for (StackedVertex vertex : stack) {
             stackedBarsPaint.setColor(vertex.color);
-            stackedBarsPaint.setAlpha((int) (vertex.opacity * 255f));
+            stackedBarsPaint.setAlpha(chartsAlpha(vertex.opacity));
 
             if (vertex.y > bottom) {
                 continue;

@@ -17,7 +17,6 @@ import java.util.List;
 
 public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
-    private long lastTime = System.nanoTime();
     private DataProvider dataProvider = new JsonDataProvider();
     private Vertex selectedVertex = null;
 
@@ -295,7 +294,7 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     private Vertex findMaxByY(List<Vertex> points) {
-        Vertex max = null;
+        Vertex max = new Vertex();
 
         for (final Vertex point : points) {
             if (max == null || max.y < point.y) {
@@ -346,14 +345,7 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     @Override
-    public void onProgress() {
-        final long time = System.nanoTime();
-        float deltaTime = (time - lastTime) / 1000000f / 10000f;
-
-        if (deltaTime > 0.1f) {
-            deltaTime = 0.1f;
-        }
-
+    public void onProgress(final float deltaTime) {
         chartState.previewMaxY = MathUtils.interpTo(
                 chartState.previewMaxY,
                 chartState.statePreviewMaxY,
@@ -432,21 +424,22 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.popupOpacityChangeSpeed
         );
 
-        chartState.chartsScale = MathUtils.interpTo(
+        chartState.chartsScale = MathUtils.linearInterpTo(
                 chartState.chartsScale,
                 chartState.chartsScaleState,
                 deltaTime,
                 chartState.zoomScaleChangeSpeed
         );
 
-        chartState.chartsOpacity = MathUtils.interpTo(
+        chartState.chartsOpacity = MathUtils.linearInterpTo(
                 chartState.chartsOpacity,
                 chartState.chartsOpacityState,
                 deltaTime,
                 chartState.zoomOpacityChangeSpeed
         );
 
-        lastTime = time;
+        chartState.chartsOpacity = MathUtils.clamp(chartState.chartsOpacity, 0.0f, 1.0f);
+        chartState.chartsScale = MathUtils.clamp(chartState.chartsScale, 0.0f, 1.0f);
     }
 
     @Override
@@ -807,8 +800,7 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.chartsOpacityState = 0f;
 
         try {
-            Log.d("ChartView", "SUCCESS LOADED NEW DATA");
-            ChartState zoomedState = dataProvider.getZoomed(assetManager, 1, (long) selectedVertex.originalX);
+            ChartState zoomedState = dataProvider.getZoomed(assetManager, 1, selectedVertex.originalX);
 
             zoomedState.chartsOpacity = 0f;
             zoomedState.chartsOpacityState = 0f;
@@ -816,7 +808,7 @@ public class ChartSolverImpl implements ChartSolver {
             zoomedState.chartsScaleState = 1f;
             zoomedState.minimapPreviewLeft = chartState.minimapRect.width() / 2 - zoomedState.minimapPreviewSize() / 2;
             zoomedState.minimapPreviewRight = zoomedState.minimapPreviewLeft + zoomedState.minimapInitialPreviewSize;
-            zoomedState.chartType = ChartType.LINES_2Y;
+            zoomedState.chartType = ChartType.BARS;
 
             return zoomedState;
         } catch (IOException e) {

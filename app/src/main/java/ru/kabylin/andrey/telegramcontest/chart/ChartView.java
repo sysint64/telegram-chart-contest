@@ -14,15 +14,34 @@ import android.view.View;
 
 import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
+import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
 public final class ChartView extends View {
     private ChartStyle style = new ChartStyle();
 
-    private ChartRenderer chartRendererZoomOut = new ChartRenderer(style);
+    private ChartRenderer chartRendererZoomedOut = new ChartRenderer(style);
     private ChartRenderer chartRendererZoomedIn = new ChartRenderer(style);
 
-    private ChartSolver currentChartSolver = chartRendererZoomOut.chartSolver;
+    private ChartSolver currentChartSolver = chartRendererZoomedOut.chartSolver;
     private final ChartUserInteractor userInteractor = new ChartUserInteractorImpl(currentChartSolver);
+
+    private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Rect minimapOverlayLeftRect = new Rect();
+    private Rect minimapOverlayRightRect = new Rect();
+    private Rect minimapBorderLeftRect = new Rect();
+    private Rect minimapBorderRightRect = new Rect();
+    private Rect minimapBorderTopRect = new Rect();
+    private Rect minimapBorderBottomRect = new Rect();
+
+    private float minimapPreviewLeft;
+    private float minimapPreviewRight;
+    private float minimapPreviewLeftState;
+    private float minimapPreviewRightState;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private float minimapPreviewChangeSpeed = 150f;
+
+    private long lastTime = System.nanoTime();
 
     public ChartView(Context context) {
         super(context);
@@ -80,18 +99,112 @@ public final class ChartView extends View {
     }
 
     public void setChartState(ChartState chartState) {
-        chartRendererZoomOut.setChartState(chartState);
+        chartRendererZoomedOut.setChartState(chartState);
+        minimapPreviewLeftState = chartState.minimapPreviewLeft;
+        minimapPreviewRightState = chartState.minimapPreviewRight;
+        minimapPreviewLeft = minimapPreviewLeftState;
+        minimapPreviewRight = minimapPreviewRightState;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (chartRendererZoomOut.onDraw(canvas, getWidth(), getHeight())) {
-            invalidate();
+        final long time = System.nanoTime();
+        float deltaTime = (time - lastTime) / 1000000f / 10000f;
+
+        if (chartRendererZoomedOut.isInit) {
+            chartRendererZoomedOut.chartSolver.onProgress(deltaTime);
         }
 
-        if (chartRendererZoomedIn.onDraw(canvas, getWidth(), getHeight())) {
-            invalidate();
+        if (chartRendererZoomedIn.isInit) {
+            chartRendererZoomedIn.chartSolver.onProgress(deltaTime);
         }
+
+        if (currentChartSolver != null) {
+            minimapOnProgress(deltaTime);
+        }
+
+        lastTime = time;
+
+        chartRendererZoomedOut.setSize(getWidth(), getHeight());
+        chartRendererZoomedIn.setSize(getWidth(), getHeight());
+
+        chartRendererZoomedOut.onDraw(canvas);
+        chartRendererZoomedIn.onDraw(canvas);
+
+        drawMinimapPreview(canvas);
+        invalidate();
+    }
+
+    private void minimapOnProgress(float deltaTime) {
+
+        ChartState chartState = currentChartSolver.getState();
+
+        minimapPreviewLeftState = chartState.minimapPreviewLeft;
+        minimapPreviewRightState = chartState.minimapPreviewRight;
+
+        minimapPreviewLeft = MathUtils.interpTo(
+                minimapPreviewLeft,
+                minimapPreviewLeftState,
+                deltaTime,
+                minimapPreviewChangeSpeed
+        );
+
+        minimapPreviewRight = MathUtils.interpTo(
+                minimapPreviewRight,
+                minimapPreviewRightState,
+                deltaTime,
+                minimapPreviewChangeSpeed
+        );
+    }
+
+    private void drawMinimapPreview(Canvas canvas) {
+        final ChartState state = chartRendererZoomedOut.chartSolver.getState();
+        final Rect previewRect = state.getMinimapPreviewRect();
+
+        // Overlay
+        paint.setColor(style.chartMinimapOverlayColor);
+
+        minimapOverlayLeftRect.set(state.minimapRect.left, state.minimapRect.top, (int) minimapPreviewLeft, state.minimapRect.bottom);
+        minimapOverlayRightRect.set((int) minimapPreviewRight, state.minimapRect.top, state.minimapRect.right, state.minimapRect.bottom);
+
+        canvas.drawRect(minimapOverlayLeftRect, paint);
+        canvas.drawRect(minimapOverlayRightRect, paint);
+
+        // Border
+        paint.setColor(style.chartMinimapBorderColor);
+
+        minimapBorderLeftRect.set(
+                (int) minimapPreviewLeft,
+                previewRect.top,
+                (int) minimapPreviewLeft + state.minimapPreviewRenderResizeAreaSize,
+                previewRect.bottom
+        );
+
+        minimapBorderRightRect.set(
+                (int) minimapPreviewRight - state.minimapPreviewRenderResizeAreaSize,
+                previewRect.top,
+                (int) minimapPreviewRight,
+                previewRect.bottom
+        );
+
+        minimapBorderTopRect.set(
+                (int) minimapPreviewLeft + state.minimapPreviewRenderResizeAreaSize,
+                previewRect.top,
+                (int) minimapPreviewRight - state.minimapPreviewRenderResizeAreaSize,
+                previewRect.top + state.minimapPreviewBorderHeight
+        );
+
+        minimapBorderBottomRect.set(
+                (int) minimapPreviewLeft + state.minimapPreviewRenderResizeAreaSize,
+                previewRect.bottom - state.minimapPreviewBorderHeight,
+                (int) minimapPreviewRight - state.minimapPreviewRenderResizeAreaSize,
+                previewRect.bottom
+        );
+
+        canvas.drawRect(minimapBorderLeftRect, paint);
+        canvas.drawRect(minimapBorderRightRect, paint);
+        canvas.drawRect(minimapBorderTopRect, paint);
+        canvas.drawRect(minimapBorderBottomRect, paint);
     }
 
     @Override
@@ -109,7 +222,7 @@ public final class ChartView extends View {
     }
 
     public void zoomIn() {
-        ChartState zoomedChartState = chartRendererZoomOut.chartSolver.zoomIn(getContext().getAssets());
+        ChartState zoomedChartState = chartRendererZoomedOut.chartSolver.zoomIn(getContext().getAssets());
 
         if (zoomedChartState != null) {
             chartRendererZoomedIn.setChartState(zoomedChartState);
@@ -120,8 +233,8 @@ public final class ChartView extends View {
     }
 
     public void zoomOut() {
-        currentChartSolver = chartRendererZoomOut.chartSolver;
-        chartRendererZoomOut.chartSolver.zoomOut();
+        currentChartSolver = chartRendererZoomedOut.chartSolver;
+        chartRendererZoomedOut.chartSolver.zoomOut();
         chartRendererZoomedIn.chartSolver.zoomIn();
         userInteractor.setChartSolver(currentChartSolver);
     }

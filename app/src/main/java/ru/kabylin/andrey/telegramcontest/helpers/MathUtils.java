@@ -13,6 +13,18 @@ public class MathUtils {
         return value;
     }
 
+    public static float clamp(float value, float min, float max) {
+        if (value < min) {
+            return min;
+        }
+
+        if (value > max) {
+            return max;
+        }
+
+        return value;
+    }
+
     public static float interpTo(float current, float target, float deltaTime, float interpSpeed) {
         if (interpSpeed == 0) {
             return target;
@@ -26,5 +38,17 @@ public class MathUtils {
 
         float deltaMove = dist * deltaTime * interpSpeed;
         return current + deltaMove;
+    }
+
+    public static float linearInterpTo(float current, float target, float deltaTime, float interpSpeed) {
+        if (target > current) {
+            return current + deltaTime * interpSpeed;
+        }
+
+        if (target < current) {
+            return current - deltaTime * interpSpeed;
+        }
+
+        return current;
     }
 }

@@ -34,8 +34,8 @@ public final class ChartState implements Parcelable {
     float axisYOpacityChangeSpeed = 150f;
     float axisYOffsetChangeSpeed = 150f;
     float popupOpacityChangeSpeed = 150f;
-    float zoomOpacityChangeSpeed = 20f;
-    float zoomScaleChangeSpeed = 20f;
+    float zoomOpacityChangeSpeed = 50f;
+    float zoomScaleChangeSpeed = 50f;
 
     float chartsOpacity = 1f;
     float chartsOpacityState = 1f;
