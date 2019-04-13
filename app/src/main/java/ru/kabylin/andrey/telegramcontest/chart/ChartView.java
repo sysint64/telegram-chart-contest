@@ -2,8 +2,10 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.TypedArray;
 import android.graphics.*;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.Nullable;
@@ -12,11 +14,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.ref.WeakReference;
+
 import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
-public final class ChartView extends View {
+public final class ChartView extends View implements OnChartStateRetrieved {
     private ChartStyle style = new ChartStyle();
 
     private ChartRenderer chartRendererZoomedOut = new ChartRenderer(style);
@@ -221,15 +225,38 @@ public final class ChartView extends View {
         userInteractor.setChartViewLayoutManager(layoutManager);
     }
 
-    public void zoomIn() {
-        ChartState zoomedChartState = chartRendererZoomedOut.chartSolver.zoomIn(getContext().getAssets());
+    private static class RetrieveZoomedInStateTask extends AsyncTask<Object, Void, ChartState> {
+        final private WeakReference<OnChartStateRetrieved> onChartStateRetrieved;
 
-        if (zoomedChartState != null) {
-            chartRendererZoomedIn.setChartState(zoomedChartState);
-            chartRendererZoomedIn.chartSolver.zoomOut();
-            currentChartSolver = chartRendererZoomedIn.chartSolver;
-            userInteractor.setChartSolver(currentChartSolver);
+        RetrieveZoomedInStateTask(OnChartStateRetrieved onChartStateRetrieved) {
+            this.onChartStateRetrieved = new WeakReference<>(onChartStateRetrieved);
         }
+
+        @Override
+        protected ChartState doInBackground(Object... objects) {
+            final ChartSolver chartSolver = (ChartSolver) objects[0];
+            final AssetManager assetManager = (AssetManager) objects[1];
+            return chartSolver.zoomIn(assetManager);
+        }
+
+        @Override
+        protected void onPostExecute(ChartState result) {
+            if (onChartStateRetrieved.get() != null && result != null) {
+                onChartStateRetrieved.get().onChartStateRetrieved(result);
+            }
+        }
+    }
+
+    @Override
+    public void onChartStateRetrieved(ChartState chartState) {
+        chartRendererZoomedIn.setChartState(chartState);
+        chartRendererZoomedIn.chartSolver.zoomOut();
+        currentChartSolver = chartRendererZoomedIn.chartSolver;
+        userInteractor.setChartSolver(currentChartSolver);
+    }
+
+    public void zoomIn() {
+        new RetrieveZoomedInStateTask(this).execute(chartRendererZoomedOut.chartSolver, getContext().getAssets());
     }
 
     public void zoomOut() {
