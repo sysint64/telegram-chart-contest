@@ -17,7 +17,7 @@ import ru.kabylin.andrey.telegramcontest.helpers.ResourcesUtils;
 public class JsonDataProvider implements DataProvider {
     @Override
     public ChartState getOverview(AssetManager assetManager, int index) throws IOException, JSONException {
-        return loadChartStateFromFile(assetManager, index + "/overview.json");
+        return loadChartStateFromFile(assetManager, index + "/overview.json", false);
     }
 
     @Override
@@ -28,15 +28,15 @@ public class JsonDataProvider implements DataProvider {
         final String year = (String) DateFormat.format("yyyy",   date);
         final String fileName = index + "/" + year + "-" + month + "/" + day + ".json";
 
-        return loadChartStateFromFile(assetManager, fileName);
+        return loadChartStateFromFile(assetManager, fileName, true);
     }
 
-    private ChartState loadChartStateFromFile(AssetManager assetManager, String fileName) throws IOException, JSONException {
+    private ChartState loadChartStateFromFile(AssetManager assetManager, String fileName, boolean showTime) throws IOException, JSONException {
         final String json = ResourcesUtils.readTextAsset(assetManager, fileName);
         final JSONObject jsonObject = new JSONObject(json);
         final JSONArray columns = jsonObject.getJSONArray("columns");
 
-        final ChartState chartState = new ChartState();
+        final ChartState chartState = new ChartState(showTime);
 
         for (int i = 0; i < columns.length(); ++i) {
             final JSONArray items = columns.getJSONArray(i);

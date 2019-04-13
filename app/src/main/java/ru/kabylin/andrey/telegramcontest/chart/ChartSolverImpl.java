@@ -11,9 +11,11 @@ import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
@@ -49,7 +51,13 @@ public class ChartSolverImpl implements ChartSolver {
         long x = x0;
 
         for (int i = 0; i < count; ++i) {
-            final String title = DateHelper.humanizeDate(new Date(x), false);
+            final String title;
+
+            if (chartState.showTime) {
+                title = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(x));
+            } else {
+                title = DateHelper.humanizeDate(new Date(x), false);
+            }
 
             chartState.xAxis.add(new AxisVertex(x, 0, title));
             chartState.axisXPool.add(new AxisVertex(x, 0, title));

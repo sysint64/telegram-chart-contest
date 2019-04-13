@@ -7,9 +7,11 @@ import android.os.Parcelable;
 import ru.kabylin.andrey.telegramcontest.helpers.DateHelper;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public final class ChartState implements Parcelable {
     ChartType chartType = ChartType.LINES;
@@ -26,6 +28,7 @@ public final class ChartState implements Parcelable {
     float statePreviewMaxY2 = 0f;
     float previewMaxY = 0f;
     float previewMaxY2 = 0f;
+    final boolean showTime;
 
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
@@ -88,10 +91,12 @@ public final class ChartState implements Parcelable {
 
     boolean isInit = false;
 
-    public ChartState() {
+    public ChartState(boolean showTime) {
+        this.showTime = showTime;
     }
 
-    public ChartState(Parcel in) {
+    protected ChartState(Parcel in) {
+        minimapInitialPreviewSize = in.readInt();
         minimapPreviewLeft = in.readInt();
         minimapPreviewRight = in.readInt();
         minimapPreviewRenderResizeAreaSize = in.readInt();
@@ -104,6 +109,7 @@ public final class ChartState implements Parcelable {
         statePreviewMaxY2 = in.readFloat();
         previewMaxY = in.readFloat();
         previewMaxY2 = in.readFloat();
+        showTime = in.readByte() != 0;
         previewMaxYChangeSpeed = in.readFloat();
         opacityChangeSpeed = in.readFloat();
         minimapMaxYChangeSpeed = in.readFloat();
@@ -111,6 +117,12 @@ public final class ChartState implements Parcelable {
         axisYOpacityChangeSpeed = in.readFloat();
         axisYOffsetChangeSpeed = in.readFloat();
         popupOpacityChangeSpeed = in.readFloat();
+        zoomOpacityChangeSpeed = in.readFloat();
+        zoomScaleChangeSpeed = in.readFloat();
+        chartsOpacity = in.readFloat();
+        chartsOpacityState = in.readFloat();
+        chartsScale = in.readFloat();
+        chartsScaleState = in.readFloat();
         axisXDistance = in.readFloat();
         axisXOffsetY = in.readFloat();
         axisYTextOffsetX = in.readFloat();
@@ -124,6 +136,57 @@ public final class ChartState implements Parcelable {
         lastStatePreviewMaxY = in.readFloat();
         lastStatePreviewMaxY2 = in.readFloat();
         isInit = in.readByte() != 0;
+        lastXLength = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(minimapInitialPreviewSize);
+        dest.writeInt(minimapPreviewLeft);
+        dest.writeInt(minimapPreviewRight);
+        dest.writeInt(minimapPreviewRenderResizeAreaSize);
+        dest.writeInt(minimapPreviewResizeAreaSize);
+        dest.writeInt(minimapPreviewBorderHeight);
+        dest.writeParcelable(minimapRect, flags);
+        dest.writeParcelable(previewRect, flags);
+        dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));
+        dest.writeFloat(statePreviewMaxY);
+        dest.writeFloat(statePreviewMaxY2);
+        dest.writeFloat(previewMaxY);
+        dest.writeFloat(previewMaxY2);
+        dest.writeByte((byte) (showTime ? 1 : 0));
+        dest.writeFloat(previewMaxYChangeSpeed);
+        dest.writeFloat(opacityChangeSpeed);
+        dest.writeFloat(minimapMaxYChangeSpeed);
+        dest.writeFloat(axisXOpacityChangeSpeed);
+        dest.writeFloat(axisYOpacityChangeSpeed);
+        dest.writeFloat(axisYOffsetChangeSpeed);
+        dest.writeFloat(popupOpacityChangeSpeed);
+        dest.writeFloat(zoomOpacityChangeSpeed);
+        dest.writeFloat(zoomScaleChangeSpeed);
+        dest.writeFloat(chartsOpacity);
+        dest.writeFloat(chartsOpacityState);
+        dest.writeFloat(chartsScale);
+        dest.writeFloat(chartsScaleState);
+        dest.writeFloat(axisXDistance);
+        dest.writeFloat(axisXOffsetY);
+        dest.writeFloat(axisYTextOffsetX);
+        dest.writeFloat(axisYTextOffsetY);
+        dest.writeByte((byte) (axisXIsInit ? 1 : 0));
+        dest.writeByte((byte) (axisYIsInit ? 1 : 0));
+        dest.writeByte((byte) (axisY2IsInit ? 1 : 0));
+        dest.writeFloat(minAxisYDelta);
+        dest.writeFloat(intersectPointSize);
+        dest.writeFloat(intersectPointStrokeWidth);
+        dest.writeFloat(lastStatePreviewMaxY);
+        dest.writeFloat(lastStatePreviewMaxY2);
+        dest.writeByte((byte) (isInit ? 1 : 0));
+        dest.writeInt(lastXLength);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<ChartState> CREATOR = new Creator<ChartState>() {
@@ -192,7 +255,14 @@ public final class ChartState implements Parcelable {
 
         for (int i = lastXLength; i < xValues.size(); ++i) {
             final String yValue = y.get(i - lastXLength).toString();
-            final String xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true);
+            final String xValue;
+
+            if (showTime) {
+                final String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(xValues.get(i)));
+                xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true) + " " + time;
+            } else {
+                xValue = DateHelper.humanizeDate(new Date(xValues.get(i)), true);
+            }
 
             chart.originalData.add(new Vertex(xValues.get(i), xValues.get(i), y.get(i - lastXLength), name, xValue, yValue, parsedColor));
             chart.minimapPointsPool.add(new Vertex(xValues.get(i), 0, 0, name, xValue, yValue, parsedColor));
@@ -201,46 +271,5 @@ public final class ChartState implements Parcelable {
         }
 
         charts.add(chart);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(minimapPreviewLeft);
-        dest.writeInt(minimapPreviewRight);
-        dest.writeInt(minimapPreviewRenderResizeAreaSize);
-        dest.writeInt(minimapPreviewResizeAreaSize);
-        dest.writeInt(minimapPreviewBorderHeight);
-        dest.writeParcelable(minimapRect, flags);
-        dest.writeParcelable(previewRect, flags);
-        dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));
-        dest.writeFloat(statePreviewMaxY);
-        dest.writeFloat(statePreviewMaxY2);
-        dest.writeFloat(previewMaxY);
-        dest.writeFloat(previewMaxY2);
-        dest.writeFloat(previewMaxYChangeSpeed);
-        dest.writeFloat(opacityChangeSpeed);
-        dest.writeFloat(minimapMaxYChangeSpeed);
-        dest.writeFloat(axisXOpacityChangeSpeed);
-        dest.writeFloat(axisYOpacityChangeSpeed);
-        dest.writeFloat(axisYOffsetChangeSpeed);
-        dest.writeFloat(popupOpacityChangeSpeed);
-        dest.writeFloat(axisXDistance);
-        dest.writeFloat(axisXOffsetY);
-        dest.writeFloat(axisYTextOffsetX);
-        dest.writeFloat(axisYTextOffsetY);
-        dest.writeByte((byte) (axisXIsInit ? 1 : 0));
-        dest.writeByte((byte) (axisYIsInit ? 1 : 0));
-        dest.writeByte((byte) (axisY2IsInit ? 1 : 0));
-        dest.writeFloat(minAxisYDelta);
-        dest.writeFloat(intersectPointSize);
-        dest.writeFloat(intersectPointStrokeWidth);
-        dest.writeFloat(lastStatePreviewMaxY);
-        dest.writeFloat(lastStatePreviewMaxY2);
-        dest.writeByte((byte) (isInit ? 1 : 0));
     }
 }
