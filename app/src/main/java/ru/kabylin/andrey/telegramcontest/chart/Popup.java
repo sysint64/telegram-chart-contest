@@ -125,8 +125,9 @@ final class Popup {
         // Item titles
         for (PopupItem item : items) {
             paint.setTextSize(itemTitleTextSize);
-            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
+            paint.getTextBounds(item.title, 0, item.title.length(), item.valueBounds);
             maxWidth = Math.max(maxWidth, item.valueBounds.width());
+            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
 
             lastTop += item.valueBounds.height() + itemTitleTopMargin;
 
