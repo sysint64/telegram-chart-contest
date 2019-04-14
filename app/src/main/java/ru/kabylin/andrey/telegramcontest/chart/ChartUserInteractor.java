@@ -7,6 +7,8 @@ import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 interface ChartUserInteractor {
     boolean onTouchEvent(MotionEvent event);
 
+    void resetTouch();
+
     void setChartViewLayoutManager(ChartViewLayoutManager layoutManager);
 
     void setChartSolver(ChartSolver chartSolver);

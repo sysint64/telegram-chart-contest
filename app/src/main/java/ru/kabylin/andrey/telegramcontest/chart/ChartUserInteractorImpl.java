@@ -86,6 +86,12 @@ class ChartUserInteractorImpl implements ChartUserInteractor {
         return result;
     }
 
+    @Override
+    public void resetTouch() {
+        state[0] = State.NONE;
+        state[1] = State.NONE;
+    }
+
     private boolean onTouchDown(int id, float touchX, float touchY) {
         final ChartState chartState = chartSolver.getState();
 

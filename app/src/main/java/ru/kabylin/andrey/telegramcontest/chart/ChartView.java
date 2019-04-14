@@ -42,6 +42,8 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     private float minimapPreviewLeftState;
     private float minimapPreviewRightState;
 
+    private ChartButton button = new ChartButton();
+
     @SuppressWarnings("FieldCanBeLocal")
     private float minimapPreviewChangeSpeed = 150f;
 
@@ -112,6 +114,8 @@ public final class ChartView extends View implements OnChartStateRetrieved {
         minimapPreviewRightState = chartState.minimapPreviewRight;
         minimapPreviewLeft = minimapPreviewLeftState;
         minimapPreviewRight = minimapPreviewRightState;
+
+        button.checkIcon = getResources().getDrawable(R.drawable.ic_check);
     }
 
     @Override
@@ -140,6 +144,10 @@ public final class ChartView extends View implements OnChartStateRetrieved {
         chartRendererZoomedIn.onDraw(canvas);
 
         drawMinimapPreview(canvas);
+
+        button.onProgress(deltaTime);
+        button.draw(canvas);
+
         invalidate();
     }
 
@@ -218,7 +226,14 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
-        return userInteractor.onTouchEvent(event);
+        final boolean buttonTouch = button.onTouchEvent(event);
+
+        if (!buttonTouch) {
+            return userInteractor.onTouchEvent(event);
+        } else {
+            userInteractor.resetTouch();
+            return true;
+        }
     }
 
     public boolean setChartVisibilityByName(final String name, final boolean visibility) {
