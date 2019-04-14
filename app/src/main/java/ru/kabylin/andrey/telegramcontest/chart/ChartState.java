@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class ChartState implements Parcelable {
-    ChartType chartType = ChartType.LINES_2Y;
+    ChartType chartType = ChartType.LINES;
     int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
     int minimapPreviewRight = minimapInitialPreviewSize;

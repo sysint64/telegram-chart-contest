@@ -23,8 +23,6 @@ public class ChartSolverImpl implements ChartSolver {
     private Vertex selectedVertex = null;
     private Vertex lastLeftBorderVertex = null;
     private Vertex lastRightBorderVertex = null;
-    private Vertex leftBorderVertex = null;
-    private Vertex rightBorderVertex = null;
     private OnChangeChartVisibleRangeListener onChangeChartVisibleRangeListener = null;
 
     private final List<List<Vertex>> subCharts = new ArrayList<>();
@@ -253,12 +251,12 @@ public class ChartSolverImpl implements ChartSolver {
             chartData.previewPoints.add(previewPoint);
         }
 
+        Vertex leftBorderVertex = null;
+        Vertex rightBorderVertex = null;
+
         if (!chartData.previewPoints.isEmpty()) {
             leftBorderVertex = chartData.previewPoints.get(0);
             rightBorderVertex = chartData.previewPoints.get(chartData.previewPoints.size() - 1);
-        } else {
-            leftBorderVertex = null;
-            rightBorderVertex = null;
         }
 
         if (lastLeftBorderVertex != leftBorderVertex || lastRightBorderVertex != rightBorderVertex) {

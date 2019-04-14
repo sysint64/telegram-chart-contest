@@ -1,7 +1,7 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.*;
-import android.support.annotation.Nullable;
+import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
@@ -13,10 +13,11 @@ final class Popup {
     float stateOpacity = 0f;
     float opacity = 0f;
     int left = 0;
-    private int top = 0;
+    private int top = (int) MeasureUtils.convertDpToPixel(8);
     private final List<PopupItem> items = new ArrayList<>();
     private String title = "Sat, Feb 24";
     boolean isVisible = false;
+    Drawable arrowIcon = null;
 
     private OnPopupEventsListener eventsListener = null;
     private PopupOnClickListener onClickListener = null;
@@ -30,8 +31,6 @@ final class Popup {
     }
 
     Popup() {
-        items.add(new PopupItem(Color.GREEN, "122", "#0"));
-        items.add(new PopupItem(Color.RED, "67", "#1"));
     }
 
     final static class PopupItem {
@@ -56,6 +55,7 @@ final class Popup {
     void drop(String title, float x, float y, List<PopupItem> items) {
         this.items.clear();
         this.items.addAll(items);
+
         this.title = title;
         this.stateOpacity = 1f;
         this.left = (int) x;
@@ -76,131 +76,124 @@ final class Popup {
     }
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF popupRect = new RectF();
+    private final RectF backgroundRect = new RectF();
     private final RectF shadowRectLevel1 = new RectF();
     private final RectF shadowRectLevel2 = new RectF();
     private final float radius = MeasureUtils.convertDpToPixel(3);
     private float titleLeft = 0f;
     private float titleTop = 0f;
     private final Rect titleBounds = new Rect();
+    private int iconLeft = 0;
+    private int iconTop = 0;
+    private int iconWidth = (int) MeasureUtils.convertDpToPixel(16);
+    private int iconHeight = (int) MeasureUtils.convertDpToPixel(16);
+    private int iconMarginTop = (int) MeasureUtils.convertDpToPixel(8);
 
-    private final float titleTextSize = MeasureUtils.convertDpToPixel(16);
+    private final float titleTextSize = MeasureUtils.convertDpToPixel(14);
     private final float itemTitleTextSize = MeasureUtils.convertDpToPixel(14);
-    private final float itemValueTextSize = MeasureUtils.convertDpToPixel(18);
+    private final float itemValueTextSize = MeasureUtils.convertDpToPixel(14);
 
-    private final float itemValueTopMargin = MeasureUtils.convertDpToPixel(16);
-    private final float itemTitleTopMargin = MeasureUtils.convertDpToPixel(4);
-    private final float itemRightMargin = MeasureUtils.convertDpToPixel(16);
+    private final float itemTitleTopMargin = MeasureUtils.convertDpToPixel(10);
+    private final float titleMarginTop = MeasureUtils.convertDpToPixel(8);
+    private final float paddingHorizontal = MeasureUtils.convertDpToPixel(12);
+    private final float paddingBottom = MeasureUtils.convertDpToPixel(8);
+    private final float itemValueMarginLeft = MeasureUtils.convertDpToPixel(16);
 
     int chartColorPopupColor = Color.WHITE;
     int chartColorPopupTitleColor = Color.BLACK;
+    int itemTitleColor = Color.BLACK;
 
     void draw(Canvas canvas, Rect rect) {
-        measure(rect, MeasureUtils.convertDpToPixel(20), false);
+        measure(rect, 0, false);
 
         drawBackground(canvas);
         drawTitle(canvas);
         drawItems(canvas);
+        drawArrow(canvas);
     }
 
     private void measure(Rect rect, float offsetX, boolean finalMeasure) {
-        // Avoid deep recursion
+        paint.setTextSize(titleTextSize);
+        paint.getTextBounds(title, 0, title.length(), titleBounds);
+
+        titleLeft = left + paddingHorizontal + offsetX;
+        titleTop = top + titleBounds.height() + titleMarginTop;
+
+        float maxWidth = titleBounds.width();
+        float lastTop = titleTop;
+
+        // Item titles
+        for (PopupItem item : items) {
+            paint.setTextSize(itemTitleTextSize);
+            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
+            maxWidth = Math.max(maxWidth, item.valueBounds.width());
+
+            lastTop += item.valueBounds.height() + itemTitleTopMargin;
+
+            // Title
+            item.titleLeft = left + paddingHorizontal + offsetX;
+            item.titleTop = lastTop;
+        }
+
+        lastTop = titleTop;
+        float maxValueWidth = 0;
+
+        // Items values
+        for (PopupItem item : items) {
+            paint.setTextSize(itemValueTextSize);
+            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
+            maxValueWidth = Math.max(maxValueWidth, item.valueBounds.width());
+
+            lastTop += item.valueBounds.height() + itemTitleTopMargin;
+
+            // Title
+            item.valueLeft = left + paddingHorizontal + maxWidth + itemValueMarginLeft + offsetX;
+            item.valueTop = lastTop;
+        }
+
+        // Items values pass 2
+        for (PopupItem item : items) {
+            item.valueLeft += maxValueWidth;
+        }
+
+        maxWidth += maxValueWidth + itemValueMarginLeft;
+
+        iconLeft = (int) (left + maxWidth + offsetX);
+        iconTop = top + iconMarginTop;
+
+        backgroundRect.set(
+                left + offsetX,
+                top,
+                left + offsetX + maxWidth + paddingHorizontal * 2,
+                lastTop + paddingBottom
+        );
+
+        final float dp1 = MeasureUtils.convertDpToPixel(1);
+        final float dp2 = MeasureUtils.convertDpToPixel(2);
+
+        shadowRectLevel1.set(
+                backgroundRect.left - dp1,
+                backgroundRect.top - dp1,
+                backgroundRect.right + dp1,
+                backgroundRect.bottom + dp1
+        );
+
+        shadowRectLevel2.set(
+                backgroundRect.left - dp2,
+                backgroundRect.top - dp2,
+                backgroundRect.right + dp2,
+                backgroundRect.bottom + dp2
+        );
+
         if (finalMeasure) {
             return;
         }
 
-        final float dp1 = MeasureUtils.convertDpToPixel(1);
-        final float dp2 = MeasureUtils.convertDpToPixel(2);
-        final float dp4 = MeasureUtils.convertDpToPixel(4);
-        final float dp8 = MeasureUtils.convertDpToPixel(8);
-        final float dp16 = MeasureUtils.convertDpToPixel(16);
+        measure(rect, -backgroundRect.width() - MeasureUtils.convertDpToPixel(20), true);
+        final float newOffset = MeasureUtils.convertDpToPixel(8);
 
-        paint.setTextSize(titleTextSize);
-        paint.getTextBounds(title, 0, title.length(), titleBounds);
-
-//        float offsetX = MeasureUtils.convertDpToPixel(20);
-        final float popupWidth = titleBounds.width();
-
-        popupRect.set(
-                left - offsetX,
-                top + dp1,
-                left - offsetX + popupWidth + dp16,
-                top
-        );
-
-        shadowRectLevel1.set(
-                left - dp1 - offsetX,
-                top,
-                left - offsetX + popupWidth + dp16 + dp1,
-                top + dp1
-        );
-
-        shadowRectLevel2.set(
-                left - dp1 - offsetX,
-                top + dp1,
-                left - offsetX + popupWidth + dp16 + dp1,
-                top + dp2
-        );
-
-        titleLeft = popupRect.left + dp8;
-        titleTop = top + titleBounds.height() + dp4;
-
-        float top = 0;
-        float bottom = 0;
-
-        float lastItemLeft = popupRect.left + dp8;
-
-        for (PopupItem item : items) {
-            paint.setTextSize(itemValueTextSize);
-            paint.getTextBounds(item.value, 0, item.value.length(), item.valueBounds);
-
-            paint.setTextSize(itemTitleTextSize);
-            paint.getTextBounds(item.title, 0, item.title.length(), item.titleBounds);
-        }
-
-        //
-        for (PopupItem item : items) {
-            // Value
-            item.valueLeft = lastItemLeft;
-            item.valueTop = titleTop + item.valueBounds.height() + itemValueTopMargin;
-
-            // Title
-            item.titleLeft = lastItemLeft;
-            item.titleTop = item.valueTop + item.titleBounds.height() + itemTitleTopMargin;
-
-            //
-            final float width = Math.max(item.valueBounds.width(), item.titleBounds.width());
-            lastItemLeft += width + itemRightMargin;
-
-            bottom = item.titleTop + item.titleBounds.height();
-        }
-
-        popupRect.bottom = bottom;
-        popupRect.right = Math.max(popupRect.right, lastItemLeft - itemRightMargin + dp8);
-
-        shadowRectLevel1.bottom = bottom + dp1;
-        shadowRectLevel1.right = Math.max(shadowRectLevel1.right, lastItemLeft - itemRightMargin + dp8 + dp1);
-
-        shadowRectLevel2.bottom = bottom + dp2;
-        shadowRectLevel2.right = Math.max(shadowRectLevel1.right, lastItemLeft - itemRightMargin + dp8 + dp1);
-
-        if (popupRect.left <= rect.left) {
-            final float newOffset = -MeasureUtils.convertDpToPixel(10);
-
-            if (left - newOffset > rect.left) {
-                measure(rect, newOffset, true);
-            }
-        }
-
-        if (popupRect.right >= rect.right) {
-            final float newOffset = popupRect.right - rect.right + MeasureUtils.convertDpToPixel(30);
-
-            if (left - newOffset + popupRect.width() < rect.right) {
-                measure(rect, newOffset, true);
-            }
-            else {
-                measure(rect, popupRect.width() + MeasureUtils.convertDpToPixel(10), true);
-            }
+        if (backgroundRect.left - newOffset <= rect.left) {
+            measure(rect, rect.left - left + newOffset, true);
         }
     }
 
@@ -217,7 +210,7 @@ final class Popup {
 
         paint.setColor(chartColorPopupColor);
         paint.setAlpha((int) (255f * opacity));
-        canvas.drawRoundRect(popupRect, radius, radius, paint);
+        canvas.drawRoundRect(backgroundRect, radius, radius, paint);
 
         paint.setStyle(Paint.Style.FILL);
     }
@@ -226,8 +219,9 @@ final class Popup {
         paint.setColor(chartColorPopupTitleColor);
         paint.setAlpha((int) (255f * opacity));
         paint.setTextSize(titleTextSize);
-
+        paint.setFakeBoldText(true);
         canvas.drawText(title, titleLeft, titleTop, paint);
+        paint.setFakeBoldText(false);
     }
 
     private void drawItems(Canvas canvas) {
@@ -237,13 +231,28 @@ final class Popup {
     }
 
     private void drawItem(Canvas canvas, PopupItem item) {
+        paint.setColor(itemTitleColor);
+        paint.setAlpha((int) (255f * opacity));
+        paint.setTextSize(itemTitleTextSize);
+        canvas.drawText(item.title, item.titleLeft, item.titleTop, paint);
+
         paint.setColor(item.color);
         paint.setAlpha((int) (255f * opacity));
         paint.setTextSize(itemValueTextSize);
+        paint.setFakeBoldText(true);
+        paint.setTextAlign(Paint.Align.RIGHT);
         canvas.drawText(item.value, item.valueLeft, item.valueTop, paint);
+        paint.setFakeBoldText(false);
+        paint.setTextAlign(Paint.Align.LEFT);
+    }
 
-        paint.setTextSize(itemTitleTextSize);
-        canvas.drawText(item.title, item.titleLeft, item.titleTop, paint);
+    private void drawArrow(Canvas canvas) {
+        if (arrowIcon == null)
+            return;
+
+        arrowIcon.setBounds(iconLeft, iconTop, iconLeft + iconWidth, iconTop + iconHeight);
+        arrowIcon.setAlpha((int) (opacity * 255f));
+        arrowIcon.draw(canvas);
     }
 
     boolean onTouchEvent(MotionEvent event) {
@@ -255,7 +264,7 @@ final class Popup {
             final float x = event.getX();
             final float y = event.getY();
 
-            if (x > popupRect.left && x < popupRect.right && y > popupRect.top && y < popupRect.bottom) {
+            if (x > backgroundRect.left && x < backgroundRect.right && y > backgroundRect.top && y < backgroundRect.bottom) {
                 if (onClickListener != null) {
                     onClickListener.onPopupClick();
                     return true;

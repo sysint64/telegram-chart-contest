@@ -10,6 +10,7 @@ import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -109,6 +110,8 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
 //        chartState.sortStackedArea();
 //        chartState.yAxisLines = 4;
         chartState.popup.setPopupOnClickListener(this);
+        chartState.popup.arrowIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_chevron_right, null);
+        chartState.popup.arrowIcon.mutate();
 
         chartRendererZoomedOut.setChartState(chartState, getResources());
         minimapPreviewLeftState = chartState.minimapPreviewLeft;
