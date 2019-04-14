@@ -1,14 +1,16 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
 final class StackedVertex implements Comparable<StackedVertex> {
-    final float y;
+    float y;
     final float opacity;
     final int color;
+    final float scale;
 
-    StackedVertex(float y, float opacity, int color) {
+    StackedVertex(float y, float opacity, int color, float scale) {
         this.y = y;
         this.opacity = opacity;
         this.color = color;
+        this.scale = scale;
     }
 
     @Override

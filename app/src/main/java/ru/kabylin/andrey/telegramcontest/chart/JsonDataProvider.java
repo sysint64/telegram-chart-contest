@@ -65,9 +65,36 @@ public class JsonDataProvider implements DataProvider {
 
                 final JSONObject colors = jsonObject.getJSONObject("colors");
                 final JSONObject names = jsonObject.getJSONObject("names");
+                final JSONObject types = jsonObject.getJSONObject("types");
 
                 chartState.addChart(colors.getString(name), names.getString(name), yValues);
+
+                final String type = types.getString(name);
+
+                switch (type) {
+                    case "line":
+                        chartState.chartType = ChartType.LINES;
+                        chartState.normilizeByMin = true;
+                        break;
+
+                    case "bar":
+                        chartState.chartType = ChartType.BARS;
+                        chartState.normilizeByMin = false;
+                        chartState.sortStackedArea();
+                        break;
+
+                    case "area":
+                        chartState.chartType = ChartType.STACKED_AREA;
+                        chartState.normilizeByMin = false;
+                        chartState.sortStackedArea();
+                        break;
+                }
             }
+        }
+
+        if (jsonObject.optBoolean("y_scaled", false)) {
+            chartState.chartType = ChartType.LINES_2Y;
+            chartState.normilizeByMin = true;
         }
 
         return chartState;

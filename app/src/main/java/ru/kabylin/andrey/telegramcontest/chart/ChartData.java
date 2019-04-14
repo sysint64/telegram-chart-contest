@@ -19,6 +19,8 @@ public class ChartData implements Comparable<ChartData> {
 
     float stateOpacity = 1f;
     float opacity = 1f;
+    float scale = 1f;
+    float stateScale = 1f;
     public boolean isVisible = true;
     float stateMinimapMaxY = 0f;
     float minimapMaxY = 0f;

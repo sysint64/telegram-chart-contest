@@ -117,7 +117,7 @@ public class ChartSolverImpl implements ChartSolver {
 //                position += ((float) chartState.popup.left) / (float) chartState.previewRect.width();
 //            }
 
-            projectVertex(originalVertex, minimapVertex, rect, x0 + (offsetSize * position), y0, xLast - (offsetSize) + (offsetSize * position), yMax);
+            projectVertex(originalVertex, minimapVertex, rect, x0 + (offsetSize * position), y0, xLast - (offsetSize) + (offsetSize * position), yMax, chartData.scale);
             chartData.minimapPoints.add(minimapVertex);
         }
 
@@ -243,7 +243,7 @@ public class ChartSolverImpl implements ChartSolver {
             final Vertex point = minimapPreviewPoints.get(i);
             final Vertex previewPoint = chartData.previewPointsPool.get(i);
 
-            projectVertex(point, previewPoint, rect, x0, yMin, xLast, yMax);
+            projectVertex(point, previewPoint, rect, x0, yMin, xLast, yMax, 1f);
 
             previewPoint.xValue = point.xValue;
             previewPoint.yValue = point.yValue;
@@ -282,10 +282,10 @@ public class ChartSolverImpl implements ChartSolver {
         lastRightBorderVertex = rightBorderVertex;
     }
 
-    private void projectVertex(Vertex vertex, Vertex to, Rect rect, float x0, float y0, float xMax, float yMax) {
+    private void projectVertex(Vertex vertex, Vertex to, Rect rect, float x0, float y0, float xMax, float yMax, float scale) {
         to.originalX = vertex.originalX;
         to.x = (long) projectX(vertex.x, rect, x0, xMax);
-        to.y = (long) projectY(vertex.y, rect, y0, yMax);
+        to.y = (long) projectY(vertex.y * scale, rect, y0, yMax);
     }
 
     private float projectX(float x, Rect rect, float x0, float xMax) {
@@ -307,7 +307,7 @@ public class ChartSolverImpl implements ChartSolver {
 
             point.originalX = chartData.originalData.get(i).originalX;
             point.x = chartData.minimapPoints.get(i).x;
-            point.y = chartData.originalData.get(i).y;
+            point.y = chartData.originalData.get(i).y * chartData.scale;
 
             if (point.x > chartState.minimapPreviewLeft && point.x < chartState.minimapPreviewRight) {
                 // Add point before left border
@@ -486,8 +486,6 @@ public class ChartSolverImpl implements ChartSolver {
                 chartState.previewMaxYChangeSpeed
         );
 
-//        Log.d("CHART", "MIN: " + chartState.previewMinY);
-
         for (final ChartData chart : chartState.charts) {
             chart.opacity = MathUtils.interpTo(
                     chart.opacity,
@@ -501,6 +499,13 @@ public class ChartSolverImpl implements ChartSolver {
                     chart.stateMinimapMaxY,
                     deltaTime,
                     chartState.minimapMaxYChangeSpeed
+            );
+
+            chart.scale = MathUtils.interpTo(
+                    chart.scale,
+                    chart.stateScale,
+                    deltaTime,
+                    chartState.stackedScaleChangeSpeed
             );
         }
 
@@ -575,7 +580,13 @@ public class ChartSolverImpl implements ChartSolver {
         for (final ChartData chart : chartState.charts) {
             if (chart.name.equals(name)) {
                 chart.isVisible = visibility;
-                chart.stateOpacity = chart.isVisible ? 1f : 0f;
+
+                if (chartState.chartType != ChartType.BARS && chartState.chartType != ChartType.STACKED_AREA) {
+                    chart.stateOpacity = chart.isVisible ? 1f : 0f;
+                } else {
+                    chart.stateScale = chart.isVisible ? 1f : 0f;
+                }
+
                 return true;
             }
         }

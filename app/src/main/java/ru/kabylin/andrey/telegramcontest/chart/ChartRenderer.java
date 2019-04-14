@@ -371,9 +371,11 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
             }
 
             stack.clear();
+            final StackedVertex prev = null;
 
             for (final ChartData chart : charts) {
-                final float value;
+                float value;
+                float bottom;
 
                 switch (source) {
                     case MINIMAP:
@@ -393,7 +395,8 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
                         new StackedVertex(
                                 value,
                                 chart.opacity,
-                                chart.color
+                                chart.color,
+                                chart.scale
                         )
                 );
             }
@@ -419,6 +422,7 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
                 continue;
             }
 
+//            vertex.y = bottom + (vertex.y - bottom) * ;
             final RectF rect = new RectF(x1, vertex.y, x2, bottom);
             bottom = vertex.y;
             canvas.drawRect(rect, stackedBarsPaint);
