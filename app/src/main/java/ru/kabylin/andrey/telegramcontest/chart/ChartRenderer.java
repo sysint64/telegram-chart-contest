@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -22,7 +23,6 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
     private final Paint stackedAreaPaintMinimap = new Paint();
 
     final ChartSolver chartSolver = new ChartSolverImpl();
-    private final List<ChartButton> buttons = new ArrayList<>();
 
     private Rect minimapRect = new Rect();
     private Rect previewRect = new Rect();
@@ -48,20 +48,23 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         this.style = style;
     }
 
-    public void setChartState(ChartState chartState, Resources resources) {
+    void setChartState(ChartState chartState, Resources resources) {
         chartSolver.setChartState(chartState);
         chartState.popup.setOnPopupEventsListener(this);
         isInit = true;
 
-        buttons.clear();
+        chartState.buttons.clear();
 
         for (final ChartData chart : chartState.charts) {
             final ChartButton button = new ChartButton();
-            button.checkIcon = resources.getDrawable(R.drawable.ic_check);
+            button.checkIcon =  ResourcesCompat.getDrawable(resources, R.drawable.ic_check, null);
+            button.checkIcon.mutate();
             button.title = chart.name;
             button.color = chart.color;
             button.onClickListener = this;
-            buttons.add(button);
+            button.isChecked = chart.isVisible;
+            button.measure();
+            chartState.buttons.add(button);
         }
     }
 
@@ -70,16 +73,18 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         this.height = height;
     }
 
-    void updateButtonPositions() {
-        if (buttons.isEmpty()) {
+    private void updateButtonPositions() {
+        final ChartState chartState = chartSolver.getState();
+
+        if (chartState.buttons.isEmpty()) {
             buttonsAreaHeight = 0;
             return;
         }
 
-        buttonsAreaHeight = buttons.get(0).height;
+        buttonsAreaHeight = chartState.buttons.get(0).height;
         ChartButton prevButton = null;
 
-        for (final ChartButton button : buttons) {
+        for (final ChartButton button : chartState.buttons) {
             if (prevButton == null) {
                 button.left = 0;
                 button.top = 0;
@@ -100,7 +105,7 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         }
 
         // Move to bottom
-        for (final ChartButton button : buttons) {
+        for (final ChartButton button : chartState.buttons) {
             button.top = height - buttonsAreaHeight + button.top;
         }
     }
@@ -122,7 +127,11 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
 
         updateButtonPositions();
 
-        for (final ChartButton button : buttons) {
+        final ChartState chartState = chartSolver.getState();
+
+        for (final ChartButton button : chartState.buttons) {
+            final ChartState state = chartSolver.getState();
+            button.opacityState = state.chartsOpacityState;
             button.onDraw(canvas);
         }
     }
@@ -137,15 +146,18 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
                 barsOpacityChangeSpeed
         );
 
-        for (final ChartButton button : buttons) {
+        final ChartState chartState = chartSolver.getState();
+
+        for (final ChartButton button : chartState.buttons) {
             button.onProgress(deltaTime);
         }
     }
 
     boolean onTouchEvent(MotionEvent event) {
+        final ChartState chartState = chartSolver.getState();
         boolean result = false;
 
-        for (final ChartButton button : buttons) {
+        for (final ChartButton button : chartState.buttons) {
             final boolean buttonTouch = button.onTouchEvent(event);
             result = result | buttonTouch;
         }

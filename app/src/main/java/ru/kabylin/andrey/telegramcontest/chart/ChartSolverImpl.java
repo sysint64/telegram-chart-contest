@@ -19,6 +19,7 @@ import java.util.Locale;
 
 public class ChartSolverImpl implements ChartSolver {
     private ChartState chartState;
+    private ChartState zoomedState = null;
     private DataProvider dataProvider = new JsonDataProvider();
     private Vertex selectedVertex = null;
 
@@ -809,7 +810,7 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.chartsOpacityState = 0f;
 
         try {
-            ChartState zoomedState = dataProvider.getZoomed(assetManager, chartState.chartIndex, selectedVertex.originalX);
+            zoomedState = dataProvider.getZoomed(assetManager, chartState.chartIndex, selectedVertex.originalX);
 
             zoomedState.chartsOpacity = 0f;
             zoomedState.chartsOpacityState = 0f;
@@ -817,7 +818,16 @@ public class ChartSolverImpl implements ChartSolver {
             zoomedState.chartsScaleState = 1f;
             zoomedState.minimapPreviewLeft = chartState.minimapRect.width() / 2 - zoomedState.minimapPreviewSize() / 2;
             zoomedState.minimapPreviewRight = zoomedState.minimapPreviewLeft + zoomedState.minimapInitialPreviewSize;
-            zoomedState.chartType = ChartType.LINES;
+
+            for (ChartData chart : chartState.charts) {
+                for (ChartData zoomedChart : zoomedState.charts) {
+                    if (zoomedChart.name.equals(chart.name)) {
+                        zoomedChart.isVisible = chart.isVisible;
+                        zoomedChart.stateOpacity = chart.stateOpacity;
+                        break;
+                    }
+                }
+            }
 
             return zoomedState;
         } catch (IOException e) {
@@ -841,5 +851,26 @@ public class ChartSolverImpl implements ChartSolver {
         chartState.popup.hide();
         chartState.chartsScaleState = 0f;
         chartState.chartsOpacityState = 1f;
+
+        if (zoomedState == null) {
+            return;
+        }
+
+        for (final ChartData chart : chartState.charts) {
+            for (final ChartData zoomedChart : zoomedState.charts) {
+                if (chart.name.equals(zoomedChart.name)) {
+                    chart.isVisible = zoomedChart.isVisible;
+                    chart.stateOpacity = zoomedChart.stateOpacity;
+                    break;
+                }
+            }
+
+            for (final ChartButton chartButton : chartState.buttons) {
+                if (chartButton.title.equals(chart.name)) {
+                    chartButton.isInit = false;
+                    chartButton.isChecked = chart.isVisible;
+                }
+            }
+        }
     }
 }

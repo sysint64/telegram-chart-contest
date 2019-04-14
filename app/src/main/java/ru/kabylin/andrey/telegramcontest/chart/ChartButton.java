@@ -27,6 +27,7 @@ final class ChartButton {
     boolean isChecked = true;
     ChartButtonOnClickListener onClickListener = null;
 
+    boolean isInit = false;
     private int iconLeft = 0;
     private int iconTop = 0;
     private int textLeft = 0;
@@ -53,12 +54,15 @@ final class ChartButton {
     private float iconOffsetState = 0f;
     private float textLeftOffset = 0;
     private float textLeftOffsetState = 0;
+    private float opacity = 1f;
+    float opacityState = 1f;
 
     private static final float textOpacityChangeSpeed = 100f;
     private static final float backgroundOpacityChangeSpeed = 150f;
     private static final float iconOpacityChangeSpeed = 150f;
     private static final float iconOffsetChangeSpeed = 150f;
     private static final float textLeftOffsetChangeSpeed = 150f;
+    private static final float opacityChangeSpeed = 50f;
 
     void onDraw(Canvas canvas) {
         measure();
@@ -112,16 +116,24 @@ final class ChartButton {
                 deltaTime,
                 textLeftOffsetChangeSpeed
         );
+
+        opacity = MathUtils.interpTo(
+                opacity,
+                opacityState,
+                deltaTime,
+                opacityChangeSpeed
+        );
     }
 
     private void drawBackground(Canvas canvas) {
         paint.setColor(color);
-        paint.setAlpha((int) (backgroundOpacity * 255f));
+        paint.setAlpha((int) (backgroundOpacity * opacity * 255f));
         canvas.drawRoundRect(backgroundRect, backgroundCornerRadius, backgroundCornerRadius, paint);
     }
 
     private void drawBorder(Canvas canvas) {
         paint.setColor(color);
+        paint.setAlpha((int) (opacity * 255f));
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(strokeSize);
         canvas.drawRoundRect(borderRect, backgroundCornerRadius, backgroundCornerRadius, paint);
@@ -130,46 +142,30 @@ final class ChartButton {
 
     private void drawIcon(Canvas canvas) {
         checkIcon.setBounds(iconLeft, iconTop, iconLeft + iconWidth, iconTop + iconHeight);
-        checkIcon.setAlpha((int) (iconOpacity * 255f));
+        checkIcon.setAlpha((int) (iconOpacity * opacity * 255f));
         checkIcon.draw(canvas);
     }
 
     private void drawText(Canvas canvas) {
         paint.setColor(textColor);
-        paint.setAlpha((int) (textOpacity * 255f));
+        paint.setAlpha((int) (textOpacity * opacity * 255f));
         paint.setFakeBoldText(false);
         canvas.drawText(title, textLeft + textLeftOffset, textTop, paint);
     }
 
     private void drawUncheckedText(Canvas canvas) {
         paint.setColor(color);
-        paint.setAlpha((int) (checkedTextOpacity * 255f));
+        paint.setAlpha((int) (checkedTextOpacity * opacity * 255f));
         paint.setFakeBoldText(true);
         canvas.drawText(title, textLeft + textLeftOffset, textTop, paint);
     }
 
-    private void measure() {
+    void measure() {
         paint.setTextSize(textSize);
         paint.getTextBounds(title, 0, title.length(), textBounds);
 
         textLeft = (int) (left + paddingLeft + iconWidth + textMarginLeft);
         textTop = top + height / 2 + (int) textMarginTop;
-
-        if (!isChecked) {
-            checkedTextOpacityState = 1f;
-            textOpacityState = 0f;
-            backgroundOpacityState = 0f;
-            iconOpacityState = 0f;
-            iconOffsetState = iconWidth;
-            textLeftOffsetState = -iconWidth - paddingLeft - textMarginLeft + (width - textBounds.width()) / 2f;
-        } else {
-            checkedTextOpacityState = 0f;
-            textOpacityState = 1f;
-            backgroundOpacityState = 1f;
-            iconOpacityState = 1f;
-            iconOffsetState = 0f;
-            textLeftOffsetState = 0f;
-        }
 
         backgroundRect.set(
                 (float) left,
@@ -188,6 +184,33 @@ final class ChartButton {
 
         iconLeft = left + (int) paddingLeft + (int) iconOffset;
         iconTop = top + (height - iconHeight) / 2;
+
+        if (!isChecked) {
+            checkedTextOpacityState = 1f;
+            textOpacityState = 0f;
+            backgroundOpacityState = 0f;
+            iconOpacityState = 0f;
+            iconOffsetState = iconWidth;
+            textLeftOffsetState = -iconWidth - paddingLeft - textMarginLeft + (width - textBounds.width()) / 2f;
+        } else {
+            checkedTextOpacityState = 0f;
+            textOpacityState = 1f;
+            backgroundOpacityState = 1f;
+            iconOpacityState = 1f;
+            iconOffsetState = 0f;
+            textLeftOffsetState = 0f;
+        }
+
+        if (!isInit) {
+            isInit = true;
+
+            checkedTextOpacity = checkedTextOpacityState;
+            textOpacity = textOpacityState;
+            backgroundOpacity = backgroundOpacityState;
+            iconOpacity = iconOpacityState;
+            iconOffset = iconOffsetState;
+            textLeftOffset = textLeftOffsetState;
+        }
     }
 
     boolean onTouchEvent(MotionEvent event) {
