@@ -3,7 +3,6 @@ package ru.kabylin.andrey.telegramcontest.chart;
 import android.content.res.AssetManager;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 
 import org.json.JSONException;
 
@@ -131,17 +130,30 @@ public class ChartSolverImpl implements ChartSolver {
             }
         }
 
+        if (chartState.normilizeByMin) {
+            chartState.statePreviewMinY = findMinByYInLists(subCharts);
+            chartState.statePreviewMinY2 = chartState.statePreviewMinY;
+        }
+
         chartState.statePreviewMaxY = findMaxByYInLists(subCharts);
+
+        if (chartState.statePreviewMaxY - chartState.statePreviewMinY < 0) {
+            chartState.statePreviewMinY = 0;
+        } else {
+            chartState.statePreviewMaxY -= chartState.statePreviewMinY;
+        }
+
         chartState.statePreviewMaxY2 = chartState.statePreviewMaxY;
 
-        if (!chartState.isInitPreviewMaxY) {
+        if (!chartState.isInitPreviewMinMaxY) {
             chartState.previewMaxY = chartState.statePreviewMaxY;
-            chartState.isInitPreviewMaxY = true;
+            chartState.previewMinY = chartState.statePreviewMinY;
+            chartState.isInitPreviewMinMaxY = true;
         }
 
         for (int i = 0; i < chartState.charts.size(); ++i) {
             final ChartData chartData = chartState.charts.get(i);
-            calculatePreviewPoints(rect, chartState.previewMaxY, chartData, i);
+            calculatePreviewPoints(rect, chartState.previewMaxY, chartState.previewMinY, chartData, i);
         }
     }
 
@@ -165,15 +177,39 @@ public class ChartSolverImpl implements ChartSolver {
         if (subCharts.size() == 1) {
             chartState.statePreviewMaxY = findMaxByY(subCharts.get(0)).y;
             chartState.statePreviewMaxY2 = chartState.statePreviewMaxY;
+
+            if (chartState.normilizeByMin) {
+                chartState.statePreviewMinY = findMinByY(subCharts.get(0)).y;
+                chartState.statePreviewMinY2 = chartState.statePreviewMinY;
+            }
         } else {
             chartState.statePreviewMaxY = findMaxByY(subCharts.get(0)).y;
             chartState.statePreviewMaxY2 = findMaxByY(subCharts.get(1)).y;
+
+            if (chartState.normilizeByMin) {
+                chartState.statePreviewMinY = findMinByY(subCharts.get(0)).y;
+                chartState.statePreviewMinY2 = findMinByY(subCharts.get(1)).y;
+            }
         }
 
-        if (!chartState.isInitPreviewMaxY) {
+        if (chartState.statePreviewMaxY - chartState.statePreviewMinY < 0) {
+            chartState.statePreviewMinY = 0;
+        } else {
+            chartState.statePreviewMaxY -= chartState.statePreviewMinY;
+        }
+
+        if (chartState.statePreviewMaxY2 - chartState.statePreviewMinY2 < 0) {
+            chartState.statePreviewMinY2 = 0;
+        } else {
+            chartState.statePreviewMaxY2 -= chartState.statePreviewMinY2;
+        }
+
+        if (!chartState.isInitPreviewMinMaxY) {
             chartState.previewMaxY = chartState.statePreviewMaxY;
             chartState.previewMaxY2 = chartState.statePreviewMaxY2;
-            chartState.isInitPreviewMaxY = true;
+            chartState.previewMinY = chartState.statePreviewMinY;
+            chartState.previewMinY2 = chartState.statePreviewMinY2;
+            chartState.isInitPreviewMinMaxY = true;
         }
 
         if (chartState.charts.size() != 2) {
@@ -181,27 +217,25 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         final ChartData chartData = chartState.charts.get(0);
-        calculatePreviewPoints(rect, chartState.previewMaxY, chartData, 0);
+        calculatePreviewPoints(rect, chartState.previewMaxY, chartState.previewMinY, chartData, 0);
 
         final ChartData chartData2 = chartState.charts.get(1);
-        calculatePreviewPoints(rect, chartState.previewMaxY2, chartData2, 1);
+        calculatePreviewPoints(rect, chartState.previewMaxY2, chartState.previewMinY2, chartData2, 1);
     }
 
-    private void calculatePreviewPoints(final Rect rect, final float yMax, final ChartData chartData, final int index) {
+    private void calculatePreviewPoints(final Rect rect, final float yMax, final float yMin, final ChartData chartData, final int index) {
         final List<Vertex> minimapPreviewPoints = getMinimapPreviewPoints(chartData, index, false);
 
         chartData.previewPoints.clear();
 
         final long x0 = chartState.minimapPreviewLeft;
-        final long y0 = chartState.minimapRect.bottom;
-
         final float xLast = chartState.minimapPreviewRight;
 
         for (int i = 0; i < minimapPreviewPoints.size(); ++i) {
             final Vertex point = minimapPreviewPoints.get(i);
             final Vertex previewPoint = chartData.previewPointsPool.get(i);
 
-            projectVertex(point, previewPoint, rect, x0, y0, xLast, yMax);
+            projectVertex(point, previewPoint, rect, x0, yMin, xLast, yMax);
 
             previewPoint.xValue = point.xValue;
             previewPoint.yValue = point.yValue;
@@ -221,7 +255,7 @@ public class ChartSolverImpl implements ChartSolver {
     }
 
     private float projectY(float y, Rect rect, float y0, float yMax) {
-        return rect.bottom - (y / yMax) * (rect.bottom - rect.top);
+        return rect.bottom - ((y - y0) / yMax) * (rect.bottom - rect.top);
     }
 
     private List<Vertex> getMinimapPreviewPoints(final ChartData chartData, final int previewOriginalPointIndex, final boolean ignoreBorder) {
@@ -306,12 +340,43 @@ public class ChartSolverImpl implements ChartSolver {
         Vertex max = new Vertex();
 
         for (final Vertex point : points) {
-            if (max == null || max.y < point.y) {
+            if (max.y < point.y) {
                 max = point;
             }
         }
 
         return max;
+    }
+
+    private float findMinByYInLists(final List<List<Vertex>> charts) {
+        float yMin = Float.MAX_VALUE;
+
+        for (final List<Vertex> chartData : charts) {
+            final Vertex vertex = findMinByY(chartData);
+            if (vertex == null) {
+                continue;
+            }
+            final float min = vertex.y;
+
+            if (min < yMin) {
+                yMin = min;
+            }
+        }
+
+        return yMin;
+    }
+
+    private Vertex findMinByY(List<Vertex> points) {
+        Vertex min = new Vertex();
+        min.y = Float.MAX_VALUE;
+
+        for (final Vertex point : points) {
+            if (min.y > point.y) {
+                min = point;
+            }
+        }
+
+        return min;
     }
 
     @Override
@@ -368,6 +433,22 @@ public class ChartSolverImpl implements ChartSolver {
                 deltaTime,
                 chartState.previewMaxYChangeSpeed
         );
+
+        chartState.previewMinY = MathUtils.interpTo(
+                chartState.previewMinY,
+                chartState.statePreviewMinY,
+                deltaTime,
+                chartState.previewMaxYChangeSpeed
+        );
+
+        chartState.previewMinY2 = MathUtils.interpTo(
+                chartState.previewMinY2,
+                chartState.statePreviewMinY2,
+                deltaTime,
+                chartState.previewMaxYChangeSpeed
+        );
+
+//        Log.d("CHART", "MIN: " + chartState.previewMinY);
 
         for (final ChartData chart : chartState.charts) {
             chart.opacity = MathUtils.interpTo(
@@ -580,6 +661,7 @@ public class ChartSolverImpl implements ChartSolver {
         final List<AxisVertex> yAxisCurrent;
         final List<AxisVertex> yAxisPast;
         final float statePreviewMaxY;
+        final float statePreviewMinY;
         final float lastStatePreviewMaxY;
         final List<AxisVertex> previewAxisY;
         final AxisVertex previewAxisYZero;
@@ -589,7 +671,7 @@ public class ChartSolverImpl implements ChartSolver {
         private CalculateAxisYPointsInput(
                 List<AxisVertex> yAxis, List<AxisVertex> yAxisCurrent,
                 List<AxisVertex> yAxisPast, float statePreviewMaxY,
-                float lastStatePreviewMaxY, List<AxisVertex> previewAxisY,
+                float statePreviewMinY, float lastStatePreviewMaxY, List<AxisVertex> previewAxisY,
                 AxisVertex previewAxisYZero, Paint.Align align,
                 boolean axisYIsInit
         ) {
@@ -597,6 +679,7 @@ public class ChartSolverImpl implements ChartSolver {
             this.yAxisCurrent = yAxisCurrent;
             this.yAxisPast = yAxisPast;
             this.statePreviewMaxY = statePreviewMaxY;
+            this.statePreviewMinY = statePreviewMinY;
             this.lastStatePreviewMaxY = lastStatePreviewMaxY;
             this.previewAxisY = previewAxisY;
             this.previewAxisYZero = previewAxisYZero;
@@ -656,7 +739,7 @@ public class ChartSolverImpl implements ChartSolver {
             final long deltaValue = Math.round((input.statePreviewMaxY / (float) chartState.yAxisLines));
 
             long current = rect.bottom;
-            long currentValue = 0;
+            long currentValue = (long) input.statePreviewMinY;
 
             for (AxisVertex vertex : input.yAxisCurrent) {
                 current -= delta;
@@ -699,7 +782,7 @@ public class ChartSolverImpl implements ChartSolver {
         }
 
         input.previewAxisYZero.y = rect.bottom;
-        input.previewAxisYZero.title = "0";
+        input.previewAxisYZero.title = String.valueOf((long) input.statePreviewMinY);
         input.previewAxisYZero.opacity = 1f;
         input.previewAxisYZero.stateOpacity = 1f;
 
@@ -719,6 +802,7 @@ public class ChartSolverImpl implements ChartSolver {
                         chartState.yAxisCurrent,
                         chartState.yAxisPast,
                         chartState.statePreviewMaxY,
+                        chartState.statePreviewMinY,
                         chartState.lastStatePreviewMaxY,
                         chartState.previewAxisY,
                         chartState.previewAxisYZero,
@@ -734,6 +818,7 @@ public class ChartSolverImpl implements ChartSolver {
                         chartState.y2AxisCurrent,
                         chartState.y2AxisPast,
                         chartState.statePreviewMaxY2,
+                        chartState.statePreviewMinY2,
                         chartState.lastStatePreviewMaxY2,
                         chartState.previewAxisY2,
                         chartState.previewAxisY2Zero,

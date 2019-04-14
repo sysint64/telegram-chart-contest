@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class ChartState implements Parcelable {
-    ChartType chartType = ChartType.LINES;
+    ChartType chartType = ChartType.LINES_2Y;
     int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
     int minimapPreviewRight = minimapInitialPreviewSize;
@@ -24,11 +24,16 @@ public final class ChartState implements Parcelable {
     int minimapPreviewBorderHeight = (int) MeasureUtils.convertDpToPixel(2);
     Rect minimapRect = null;
     Rect previewRect = null;
-    boolean isInitPreviewMaxY = false;
+    boolean isInitPreviewMinMaxY = false;
+    boolean normilizeByMin = true;
     float statePreviewMaxY = 0f;
     float statePreviewMaxY2 = 0f;
+    float statePreviewMinY = 0f;
+    float statePreviewMinY2 = 0f;
     float previewMaxY = 0f;
     float previewMaxY2 = 0f;
+    float previewMinY = 0f;
+    float previewMinY2 = 0f;
     final boolean showTime;
     int chartIndex = 1;
     final List<ChartButton> buttons = new ArrayList<>();
@@ -109,7 +114,7 @@ public final class ChartState implements Parcelable {
         minimapPreviewBorderHeight = in.readInt();
         minimapRect = in.readParcelable(Rect.class.getClassLoader());
         previewRect = in.readParcelable(Rect.class.getClassLoader());
-        isInitPreviewMaxY = in.readByte() != 0;
+        isInitPreviewMinMaxY = in.readByte() != 0;
         statePreviewMaxY = in.readFloat();
         statePreviewMaxY2 = in.readFloat();
         previewMaxY = in.readFloat();
@@ -154,7 +159,7 @@ public final class ChartState implements Parcelable {
         dest.writeInt(minimapPreviewBorderHeight);
         dest.writeParcelable(minimapRect, flags);
         dest.writeParcelable(previewRect, flags);
-        dest.writeByte((byte) (isInitPreviewMaxY ? 1 : 0));
+        dest.writeByte((byte) (isInitPreviewMinMaxY ? 1 : 0));
         dest.writeFloat(statePreviewMaxY);
         dest.writeFloat(statePreviewMaxY2);
         dest.writeFloat(previewMaxY);
