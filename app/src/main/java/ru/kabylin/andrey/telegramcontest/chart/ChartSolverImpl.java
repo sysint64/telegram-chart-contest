@@ -501,12 +501,21 @@ public class ChartSolverImpl implements ChartSolver {
                     chartState.minimapMaxYChangeSpeed
             );
 
-            chart.scale = MathUtils.interpTo(
-                    chart.scale,
-                    chart.stateScale,
-                    deltaTime,
-                    chartState.stackedScaleChangeSpeed
-            );
+            if (chartState.chartType == ChartType.BARS) {
+                chart.scale = MathUtils.interpTo(
+                        chart.scale,
+                        chart.stateScale,
+                        deltaTime,
+                        chartState.stackedScaleChangeSpeed
+                );
+            } else {
+                chart.scale = MathUtils.interpTo(
+                        chart.scale,
+                        chart.stateScale,
+                        deltaTime,
+                        chartState.areaStackedScaleChangeSpeed
+                );
+            }
         }
 
         for (final AxisVertex vertex : chartState.xAxis) {
@@ -590,8 +599,6 @@ public class ChartSolverImpl implements ChartSolver {
                 } else if (chartState.chartType == ChartType.STACKED_AREA) {
                     chart.stateOpacity = chart.isVisible ? 1f : 0f;
                     chart.stateScale = chart.isVisible ? 1f : 0f;
-//                    chart.opacity = chart.isVisible ? 1f : 0f;
-//                    chart.scale = chart.isVisible ? 1f : 0f;
                 } else {
                     chart.stateOpacity = chart.isVisible ? 1f : 0f;
                 }
@@ -968,6 +975,8 @@ public class ChartSolverImpl implements ChartSolver {
                     if (zoomedChart.name.equals(chart.name)) {
                         zoomedChart.isVisible = chart.isVisible;
                         zoomedChart.stateOpacity = chart.stateOpacity;
+                        zoomedChart.stateScale = zoomedChart.isVisible ? 1f : 0f;
+                        zoomedChart.scale = zoomedChart.stateScale;
                         break;
                     }
                 }
@@ -1008,6 +1017,7 @@ public class ChartSolverImpl implements ChartSolver {
                 if (chart.name.equals(zoomedChart.name)) {
                     chart.isVisible = zoomedChart.isVisible;
                     chart.stateOpacity = zoomedChart.stateOpacity;
+                    chart.stateScale = zoomedChart.stateScale;
                     break;
                 }
             }

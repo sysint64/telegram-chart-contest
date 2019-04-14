@@ -295,15 +295,26 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
     }
 
     private void drawStackedAreas(Canvas canvas, List<ChartData> charts, ChartData.SourceType source, Paint paint) {
-        boolean isDrawBackground = false;
+        for (int i = charts.size() - 1; i >= 0; --i) {
+            final ChartData chart = charts.get(i);
+
+            if (chart.isVisible) {
+                paint.setColor(chart.color);
+
+                switch (source) {
+                    case MINIMAP:
+                        canvas.drawRect(minimapRect, paint);
+                        break;
+
+                    case PREVIEW:
+                        canvas.drawRect(previewRect, paint);
+                        break;
+                }
+            }
+        }
+
         for (final ChartData chart : charts) {
             paint.setColor(chart.color);
-
-            if (chart.isVisible && !isDrawBackground) {
-                canvas.drawRect(previewRect, paint);
-                isDrawBackground = true;
-            }
-
             paint.setAlpha(chartsAlpha(chart.opacity));
 
             switch (source) {
@@ -401,6 +412,10 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
 
                     default:
                         value = chart.previewPoints.get(i).y;
+                }
+
+                if (chart.scale < 0.01f) {
+                    continue;
                 }
 
                 stack.add(
