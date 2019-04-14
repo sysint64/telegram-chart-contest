@@ -307,19 +307,6 @@ public final class ChartState implements Parcelable {
                 chart.previewPointsPool.get(i).yValue = title;
                 chart.minimapInnerPreviewPool.get(i).yValue = title;
             }
-
-            if (i == 0) {
-                continue;
-            }
-
-            final Vertex prevTopVertex = charts.get(0).originalData.get(i - 1);
-            final Vertex vertex = charts.get(0).originalData.get(i);
-
-            for (final ChartData chart : charts) {
-                if (vertex.y < chart.originalData.get(i).y) {
-                    vertex.y = prevTopVertex.y;
-                }
-            }
         }
     }
 

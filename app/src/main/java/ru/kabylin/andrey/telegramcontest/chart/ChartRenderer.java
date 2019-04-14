@@ -295,8 +295,15 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
     }
 
     private void drawStackedAreas(Canvas canvas, List<ChartData> charts, ChartData.SourceType source, Paint paint) {
+        boolean isDrawBackground = false;
         for (final ChartData chart : charts) {
             paint.setColor(chart.color);
+
+            if (chart.isVisible && !isDrawBackground) {
+                canvas.drawRect(previewRect, paint);
+                isDrawBackground = true;
+            }
+
             paint.setAlpha(chartsAlpha(chart.opacity));
 
             switch (source) {

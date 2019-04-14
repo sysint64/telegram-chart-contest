@@ -590,8 +590,8 @@ public class ChartSolverImpl implements ChartSolver {
                 } else if (chartState.chartType == ChartType.STACKED_AREA) {
                     chart.stateOpacity = chart.isVisible ? 1f : 0f;
                     chart.stateScale = chart.isVisible ? 1f : 0f;
-                    chart.opacity = chart.isVisible ? 1f : 0f;
-                    chart.scale = chart.isVisible ? 1f : 0f;
+//                    chart.opacity = chart.isVisible ? 1f : 0f;
+//                    chart.scale = chart.isVisible ? 1f : 0f;
                 } else {
                     chart.stateOpacity = chart.isVisible ? 1f : 0f;
                 }
