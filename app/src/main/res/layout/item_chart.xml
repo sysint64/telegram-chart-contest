@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView2" />
+        app:layout_constraintTop_toBottomOf="@+id/rangeTitleTextView" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -38,16 +38,19 @@
         tools:text="Chart Title" />
 
     <TextView
-        android:id="@+id/titleTextView2"
-        android:layout_width="wrap_content"
+        android:id="@+id/rangeTitleTextView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:text="1 April 2019 - 30 April 2019"
+        android:textAlignment="textEnd"
         android:textColor="#000"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@+id/titleTextView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonZoomOut"
         tools:text="1 April 2019 - 30 April 2019" />
 
     <Button
@@ -61,7 +64,7 @@
         android:text="Zoom Out"
         android:textAllCaps="false"
         android:textColor="#00f"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

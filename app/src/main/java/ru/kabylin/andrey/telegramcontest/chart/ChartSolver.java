@@ -41,4 +41,6 @@ public interface ChartSolver {
     void zoomIn();
 
     void zoomOut();
+
+    void setOnChangeChartVisibleRangeListener(final OnChangeChartVisibleRangeListener onChangeChartVisibleRangeListener);
 }

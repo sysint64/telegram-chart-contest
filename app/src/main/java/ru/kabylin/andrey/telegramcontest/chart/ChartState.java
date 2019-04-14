@@ -37,6 +37,7 @@ public final class ChartState implements Parcelable {
     final boolean showTime;
     int chartIndex = 1;
     final List<ChartButton> buttons = new ArrayList<>();
+    public String rangeTitle = "?";
 
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;

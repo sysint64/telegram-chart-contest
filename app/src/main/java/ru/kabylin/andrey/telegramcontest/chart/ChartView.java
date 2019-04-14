@@ -121,6 +121,11 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
         this.onZoomListener = onZoomListener;
     }
 
+    public void setOnChangeChartVisibleRangeListener(OnChangeChartVisibleRangeListener onChangeChartVisibleRangeListener) {
+        this.chartRendererZoomedOut.chartSolver.setOnChangeChartVisibleRangeListener(onChangeChartVisibleRangeListener);
+        this.chartRendererZoomedIn.chartSolver.setOnChangeChartVisibleRangeListener(onChangeChartVisibleRangeListener);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         final long time = System.nanoTime();

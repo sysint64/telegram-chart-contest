@@ -21,6 +21,11 @@ public class ChartSolverImpl implements ChartSolver {
     private ChartState zoomedState = null;
     private DataProvider dataProvider = new JsonDataProvider();
     private Vertex selectedVertex = null;
+    private Vertex lastLeftBorderVertex = null;
+    private Vertex lastRightBorderVertex = null;
+    private Vertex leftBorderVertex = null;
+    private Vertex rightBorderVertex = null;
+    private OnChangeChartVisibleRangeListener onChangeChartVisibleRangeListener = null;
 
     private final List<List<Vertex>> subCharts = new ArrayList<>();
     private final ArrayList<ArrayList<Vertex>> previewOriginalPoints = new ArrayList<>();
@@ -40,6 +45,11 @@ public class ChartSolverImpl implements ChartSolver {
             previewOriginalPoints.add(new ArrayList<Vertex>());
             chartState.popupIntersectPoints.add(new Vertex());
         }
+    }
+
+    @Override
+    public void setOnChangeChartVisibleRangeListener(OnChangeChartVisibleRangeListener onChangeChartVisibleRangeListener) {
+        this.onChangeChartVisibleRangeListener = onChangeChartVisibleRangeListener;
     }
 
     private void fillAxisPoints(List<Long> xValues) {
@@ -242,6 +252,36 @@ public class ChartSolverImpl implements ChartSolver {
 
             chartData.previewPoints.add(previewPoint);
         }
+
+        if (!chartData.previewPoints.isEmpty()) {
+            leftBorderVertex = chartData.previewPoints.get(0);
+            rightBorderVertex = chartData.previewPoints.get(chartData.previewPoints.size() - 1);
+        } else {
+            leftBorderVertex = null;
+            rightBorderVertex = null;
+        }
+
+        if (lastLeftBorderVertex != leftBorderVertex || lastRightBorderVertex != rightBorderVertex) {
+            String leftTitle = "?";
+            String rightTitle = "?";
+
+            if (leftBorderVertex != null) {
+                leftTitle = leftBorderVertex.xValue;
+            }
+
+            if (rightBorderVertex != null) {
+                rightTitle = rightBorderVertex.xValue;
+            }
+
+            chartState.rangeTitle = leftTitle + " - " + rightTitle;
+
+            if (onChangeChartVisibleRangeListener != null) {
+                onChangeChartVisibleRangeListener.onChangeChartVisibleRangeListener(leftTitle + " - " + rightTitle);
+            }
+        }
+
+        lastLeftBorderVertex = leftBorderVertex;
+        lastRightBorderVertex = rightBorderVertex;
     }
 
     private void projectVertex(Vertex vertex, Vertex to, Rect rect, float x0, float y0, float xMax, float yMax) {
