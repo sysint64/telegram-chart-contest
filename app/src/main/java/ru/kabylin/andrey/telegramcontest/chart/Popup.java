@@ -2,6 +2,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 
 import android.graphics.*;
 import android.support.annotation.Nullable;
+import android.view.MotionEvent;
 
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
@@ -17,11 +18,15 @@ final class Popup {
     private String title = "Sat, Feb 24";
     boolean isVisible = false;
 
-    @Nullable
     private OnPopupEventsListener eventsListener = null;
+    private PopupOnClickListener onClickListener = null;
 
     void setOnPopupEventsListener(OnPopupEventsListener eventsListener) {
         this.eventsListener = eventsListener;
+    }
+
+    void setPopupOnClickListener(PopupOnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
     }
 
     Popup() {
@@ -239,5 +244,29 @@ final class Popup {
 
         paint.setTextSize(itemTitleTextSize);
         canvas.drawText(item.title, item.titleLeft, item.titleTop, paint);
+    }
+
+    boolean onTouchEvent(MotionEvent event) {
+        if (!isVisible) {
+            return false;
+        }
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            final float x = event.getX();
+            final float y = event.getY();
+
+            if (x > popupRect.left && x < popupRect.right && y > popupRect.top && y < popupRect.bottom) {
+                if (onClickListener != null) {
+                    onClickListener.onPopupClick();
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

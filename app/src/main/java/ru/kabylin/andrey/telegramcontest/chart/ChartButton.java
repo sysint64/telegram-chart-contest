@@ -12,19 +12,20 @@ import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 final class ChartButton {
-    int left = 50;
-    int top = 100;
+    int left = 0;
+    int top = 0;
     String title = "Test";
     int color = Color.BLACK;
     int textColor = Color.WHITE;
     Drawable checkIcon;
     float textSize = MeasureUtils.convertDpToPixel(16);
     int width = 0;
-    int height = 0;
+    int height = (int) MeasureUtils.convertDpToPixel(32);
     private final Rect textBounds = new Rect();
     private final RectF backgroundRect = new RectF();
     private final RectF borderRect = new RectF();
-    boolean checked = false;
+    boolean isChecked = true;
+    ChartButtonOnClickListener onClickListener = null;
 
     private int iconLeft = 0;
     private int iconTop = 0;
@@ -36,8 +37,8 @@ final class ChartButton {
     private final float backgroundCornerRadius = MeasureUtils.convertDpToPixel(24);
     private final float paddingLeft = MeasureUtils.convertDpToPixel(8);
     private final float paddingRight = MeasureUtils.convertDpToPixel(16);
-    private final float paddingVertical = MeasureUtils.convertDpToPixel(12);
     private final float textMarginLeft = MeasureUtils.convertDpToPixel(4);
+    private final float textMarginTop = MeasureUtils.convertDpToPixel(6);
     private final float strokeSize = MeasureUtils.convertDpToPixel(2);
 
     private float checkedTextOpacity = 0f;
@@ -59,14 +60,14 @@ final class ChartButton {
     private static final float iconOffsetChangeSpeed = 150f;
     private static final float textLeftOffsetChangeSpeed = 150f;
 
-    void draw(Canvas canvas) {
+    void onDraw(Canvas canvas) {
         measure();
 
         drawBackground(canvas);
         drawBorder(canvas);
         drawIcon(canvas);
         drawText(canvas);
-        drawCheckedText(canvas);
+        drawUncheckedText(canvas);
     }
 
     void onProgress(float deltaTime) {
@@ -140,7 +141,7 @@ final class ChartButton {
         canvas.drawText(title, textLeft + textLeftOffset, textTop, paint);
     }
 
-    private void drawCheckedText(Canvas canvas) {
+    private void drawUncheckedText(Canvas canvas) {
         paint.setColor(color);
         paint.setAlpha((int) (checkedTextOpacity * 255f));
         paint.setFakeBoldText(true);
@@ -152,9 +153,9 @@ final class ChartButton {
         paint.getTextBounds(title, 0, title.length(), textBounds);
 
         textLeft = (int) (left + paddingLeft + iconWidth + textMarginLeft);
-        textTop = (int) (top + paddingVertical + textBounds.height());
+        textTop = top + height / 2 + (int) textMarginTop;
 
-        if (checked) {
+        if (!isChecked) {
             checkedTextOpacityState = 1f;
             textOpacityState = 0f;
             backgroundOpacityState = 0f;
@@ -174,7 +175,7 @@ final class ChartButton {
                 (float) left,
                 (float) top,
                 textLeft + textBounds.width() + paddingRight,
-                top + paddingVertical + textBounds.height() + paddingVertical
+                top + height
         );
 
         borderRect.set(backgroundRect);
@@ -184,7 +185,6 @@ final class ChartButton {
         borderRect.bottom -= strokeSize / 2;
 
         width = (int) backgroundRect.width();
-        height = (int) backgroundRect.height();
 
         iconLeft = left + (int) paddingLeft + (int) iconOffset;
         iconTop = top + (height - iconHeight) / 2;
@@ -196,7 +196,10 @@ final class ChartButton {
             final float y = event.getY();
 
             if (x > left && x < left + width && y > top && y < top + height) {
-                checked = !checked;
+                isChecked = !isChecked;
+                if (onClickListener != null) {
+                    onClickListener.onClick(this);
+                }
                 return true;
             } else {
                 return false;

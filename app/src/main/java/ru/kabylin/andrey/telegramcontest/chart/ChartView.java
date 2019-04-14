@@ -20,14 +20,14 @@ import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 
-public final class ChartView extends View implements OnChartStateRetrieved {
+public final class ChartView extends View implements OnChartStateRetrieved, PopupOnClickListener {
     private ChartStyle style = new ChartStyle();
 
     private ChartRenderer chartRendererZoomedOut = new ChartRenderer(style);
     private ChartRenderer chartRendererZoomedIn = new ChartRenderer(style);
 
-    private ChartSolver currentChartSolver = chartRendererZoomedOut.chartSolver;
-    private final ChartUserInteractor userInteractor = new ChartUserInteractorImpl(currentChartSolver);
+    private ChartRenderer currentChartRenderer = chartRendererZoomedOut;
+    private final ChartUserInteractor userInteractor = new ChartUserInteractorImpl(currentChartRenderer.chartSolver);
 
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Rect minimapOverlayLeftRect = new Rect();
@@ -42,7 +42,7 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     private float minimapPreviewLeftState;
     private float minimapPreviewRightState;
 
-    private ChartButton button = new ChartButton();
+    private OnZoomListener onZoomListener = null;
 
     @SuppressWarnings("FieldCanBeLocal")
     private float minimapPreviewChangeSpeed = 150f;
@@ -105,17 +105,20 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     }
 
     public void setChartState(ChartState chartState) {
-        chartState.normalizeDataToPercentage();
-        chartState.sortStackedArea();
-        chartState.yAxisLines = 4;
+//        chartState.normalizeDataToPercentage();
+//        chartState.sortStackedArea();
+//        chartState.yAxisLines = 4;
+        chartState.popup.setPopupOnClickListener(this);
 
-        chartRendererZoomedOut.setChartState(chartState);
+        chartRendererZoomedOut.setChartState(chartState, getResources());
         minimapPreviewLeftState = chartState.minimapPreviewLeft;
         minimapPreviewRightState = chartState.minimapPreviewRight;
         minimapPreviewLeft = minimapPreviewLeftState;
         minimapPreviewRight = minimapPreviewRightState;
+    }
 
-        button.checkIcon = getResources().getDrawable(R.drawable.ic_check);
+    public void setOnZoomListener(OnZoomListener onZoomListener) {
+        this.onZoomListener = onZoomListener;
     }
 
     @Override
@@ -131,7 +134,7 @@ public final class ChartView extends View implements OnChartStateRetrieved {
             chartRendererZoomedIn.onProgress(deltaTime);
         }
 
-        if (currentChartSolver != null) {
+        if (currentChartRenderer != null) {
             minimapOnProgress(deltaTime);
         }
 
@@ -145,15 +148,12 @@ public final class ChartView extends View implements OnChartStateRetrieved {
 
         drawMinimapPreview(canvas);
 
-        button.onProgress(deltaTime);
-        button.draw(canvas);
-
         invalidate();
     }
 
     private void minimapOnProgress(float deltaTime) {
 
-        ChartState chartState = currentChartSolver.getState();
+        ChartState chartState = currentChartRenderer.chartSolver.getState();
 
         minimapPreviewLeftState = chartState.minimapPreviewLeft;
         minimapPreviewRightState = chartState.minimapPreviewRight;
@@ -176,6 +176,10 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     private void drawMinimapPreview(Canvas canvas) {
         final ChartState state = chartRendererZoomedOut.chartSolver.getState();
         final Rect previewRect = state.getMinimapPreviewRect();
+
+        if (previewRect == null) {
+            return;
+        }
 
         // Overlay
         paint.setColor(style.chartMinimapOverlayColor);
@@ -226,18 +230,14 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     @Override
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent event) {
-        final boolean buttonTouch = button.onTouchEvent(event);
+        boolean result = currentChartRenderer.onTouchEvent(event);
 
-        if (!buttonTouch) {
-            return userInteractor.onTouchEvent(event);
-        } else {
+        if (result) {
             userInteractor.resetTouch();
-            return true;
+            return result;
+        } else {
+            return userInteractor.onTouchEvent(event);
         }
-    }
-
-    public boolean setChartVisibilityByName(final String name, final boolean visibility) {
-        return currentChartSolver.setChartVisibilityByName(name, visibility);
     }
 
     public void setLayoutManager(ChartViewLayoutManager layoutManager) {
@@ -268,10 +268,11 @@ public final class ChartView extends View implements OnChartStateRetrieved {
 
     @Override
     public void onChartStateRetrieved(ChartState chartState) {
-        chartRendererZoomedIn.setChartState(chartState);
+        chartRendererZoomedIn.setChartState(chartState, getResources());
         chartRendererZoomedIn.chartSolver.zoomOut();
-        currentChartSolver = chartRendererZoomedIn.chartSolver;
-        userInteractor.setChartSolver(currentChartSolver);
+        currentChartRenderer = chartRendererZoomedIn;
+        userInteractor.setChartSolver(currentChartRenderer.chartSolver);
+        onZoomListener.onZoomIn();
     }
 
     public void zoomIn() {
@@ -279,13 +280,19 @@ public final class ChartView extends View implements OnChartStateRetrieved {
     }
 
     public void zoomOut() {
-        currentChartSolver = chartRendererZoomedOut.chartSolver;
+        currentChartRenderer = chartRendererZoomedOut;
         chartRendererZoomedOut.chartSolver.zoomOut();
 
         if (chartRendererZoomedIn.isInit) {
             chartRendererZoomedIn.chartSolver.zoomIn();
         }
 
-        userInteractor.setChartSolver(currentChartSolver);
+        userInteractor.setChartSolver(currentChartRenderer.chartSolver);
+        onZoomListener.onZoomOut();
+    }
+
+    @Override
+    public void onPopupClick() {
+        zoomIn();
     }
 }

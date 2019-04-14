@@ -1,24 +1,28 @@
 package ru.kabylin.andrey.telegramcontest.chart;
 
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
 import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
-public final class ChartRenderer implements OnPopupEventsListener {
+public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOnClickListener {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stackedBarsPaint = new Paint();
     private final Paint stackedAreaPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stackedAreaPaintMinimap = new Paint();
 
     final ChartSolver chartSolver = new ChartSolverImpl();
+    private final List<ChartButton> buttons = new ArrayList<>();
 
     private Rect minimapRect = new Rect();
     private Rect previewRect = new Rect();
@@ -31,6 +35,11 @@ public final class ChartRenderer implements OnPopupEventsListener {
     private final Path stackedAreaPath = new Path();
     private float barsOpacity = 1f;
     private float barsOpacityState = 1f;
+    private int buttonsAreaHeight = 0;
+    private final float buttonsGaps = MeasureUtils.convertDpToPixel(4);
+    private final int minimapMarginBottom = (int) MeasureUtils.convertDpToPixel(16);
+    private final int previewMarginBottom = (int) MeasureUtils.convertDpToPixel(32);
+    private final int minimapHeight = (int) MeasureUtils.convertDpToPixel(50);
 
     @SuppressWarnings("FieldCanBeLocal")
     private float barsOpacityChangeSpeed = 100f;
@@ -39,15 +48,61 @@ public final class ChartRenderer implements OnPopupEventsListener {
         this.style = style;
     }
 
-    public void setChartState(ChartState chartState) {
+    public void setChartState(ChartState chartState, Resources resources) {
         chartSolver.setChartState(chartState);
         chartState.popup.setOnPopupEventsListener(this);
         isInit = true;
+
+        buttons.clear();
+
+        for (final ChartData chart : chartState.charts) {
+            final ChartButton button = new ChartButton();
+            button.checkIcon = resources.getDrawable(R.drawable.ic_check);
+            button.title = chart.name;
+            button.color = chart.color;
+            button.onClickListener = this;
+            buttons.add(button);
+        }
     }
 
     void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    void updateButtonPositions() {
+        if (buttons.isEmpty()) {
+            buttonsAreaHeight = 0;
+            return;
+        }
+
+        buttonsAreaHeight = buttons.get(0).height;
+        ChartButton prevButton = null;
+
+        for (final ChartButton button : buttons) {
+            if (prevButton == null) {
+                button.left = 0;
+                button.top = 0;
+                prevButton = button;
+                continue;
+            }
+
+            button.left = prevButton.left + prevButton.width + (int) buttonsGaps;
+            button.top = prevButton.top;
+
+            if (button.left + button.width > width) {
+                button.left = 0;
+                button.top += button.height + (int) buttonsGaps;
+                buttonsAreaHeight += button.height + (int) buttonsGaps;
+            }
+
+            prevButton = button;
+        }
+
+        // Move to bottom
+        for (final ChartButton button : buttons) {
+            button.top = height - buttonsAreaHeight + button.top;
+        }
     }
 
     void onDraw(Canvas canvas) {
@@ -64,6 +119,12 @@ public final class ChartRenderer implements OnPopupEventsListener {
         drawAxisY2Labels(canvas);
         drawAxisYGrid(canvas);
         drawPopup(canvas);
+
+        updateButtonPositions();
+
+        for (final ChartButton button : buttons) {
+            button.onDraw(canvas);
+        }
     }
 
     void onProgress(float deltaTime) {
@@ -75,6 +136,24 @@ public final class ChartRenderer implements OnPopupEventsListener {
                 deltaTime,
                 barsOpacityChangeSpeed
         );
+
+        for (final ChartButton button : buttons) {
+            button.onProgress(deltaTime);
+        }
+    }
+
+    boolean onTouchEvent(MotionEvent event) {
+        boolean result = false;
+
+        for (final ChartButton button : buttons) {
+            final boolean buttonTouch = button.onTouchEvent(event);
+            result = result | buttonTouch;
+        }
+
+        final ChartState state = chartSolver.getState();
+        result = result | state.popup.onTouchEvent(event);
+
+        return result;
     }
 
     @Override
@@ -100,9 +179,9 @@ public final class ChartRenderer implements OnPopupEventsListener {
     private void drawMinimap(Canvas canvas) {
         minimapRect.set(
                 /* left */ 0,
-                /* top*/ height - (int) MeasureUtils.convertDpToPixel(50),
+                /* top*/ height - minimapHeight - buttonsAreaHeight - minimapMarginBottom,
                 /* right */ width,
-                /* bottom */ height
+                /* bottom */ height - buttonsAreaHeight - minimapMarginBottom
         );
 
         final ChartState state = chartSolver.getState();
@@ -142,7 +221,7 @@ public final class ChartRenderer implements OnPopupEventsListener {
                 /* left */ 0,
                 /* top*/ 0,
                 /* right */ width,
-                /* bottom */ height - (int) MeasureUtils.convertDpToPixel(90)
+                /* bottom */ minimapRect.top - previewMarginBottom
         );
 
         final ChartState state = chartSolver.getState();
@@ -500,5 +579,12 @@ public final class ChartRenderer implements OnPopupEventsListener {
         state.popup.chartColorPopupColor = style.chartColorPopupColor;
         state.popup.chartColorPopupTitleColor = style.chartColorPopupTitleColor;
         state.popup.draw(canvas, state.previewRect);
+    }
+
+    @Override
+    public void onClick(ChartButton button) {
+        final ChartState state = chartSolver.getState();
+        state.popup.hide();
+        chartSolver.setChartVisibilityByName(button.title, button.isChecked);
     }
 }

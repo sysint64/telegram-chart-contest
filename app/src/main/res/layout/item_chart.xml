@@ -4,31 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="48dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginBottom="24dp"
     android:background="?attr/cardBackground"
     android:elevation="3dp"
     android:paddingBottom="16dp"
     tools:context=".MainActivity"
     tools:targetApi="lollipop">
-
-    <Button
-        android:id="@+id/buttonZoomOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Zoom out"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/buttonZoomIn" />
-
-    <Button
-        android:id="@+id/buttonZoomIn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Zoom In"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chartView" />
 
     <ru.kabylin.andrey.telegramcontest.chart.ChartView
         android:id="@+id/chartView"
@@ -40,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView2" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -67,5 +49,22 @@
         app:layout_constraintBaseline_toBaselineOf="@+id/titleTextView"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="1 April 2019 - 30 April 2019" />
+
+    <Button
+        android:id="@+id/buttonZoomOut"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        android:drawableStart="@drawable/ic_magnify_minus_outline"
+        android:text="Zoom Out"
+        android:textAllCaps="false"
+        android:textColor="#00f"
+        android:textSize="18sp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
 </android.support.constraint.ConstraintLayout>

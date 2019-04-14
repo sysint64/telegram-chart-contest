@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class ChartState implements Parcelable {
-    ChartType chartType = ChartType.STACKED_AREA;
+    ChartType chartType = ChartType.LINES;
     int minimapInitialPreviewSize = (int) MeasureUtils.convertDpToPixel(80);
     int minimapPreviewLeft = 0;
     int minimapPreviewRight = minimapInitialPreviewSize;
@@ -58,8 +58,8 @@ public final class ChartState implements Parcelable {
     boolean axisY2IsInit = false;
 
     float minAxisYDelta = MeasureUtils.convertDpToPixel(10);
-    float intersectPointSize = MeasureUtils.convertDpToPixel(5);
-    float intersectPointStrokeWidth = MeasureUtils.convertDpToPixel(3);
+    float intersectPointSize = MeasureUtils.convertDpToPixel(4);
+    float intersectPointStrokeWidth = MeasureUtils.convertDpToPixel(2);
 
     public List<ChartData> charts = new ArrayList<>();
     List<Vertex> popupIntersectPoints = new ArrayList<>();
@@ -206,15 +206,15 @@ public final class ChartState implements Parcelable {
     };
 
     Rect getMinimapPreviewRect() {
-        if (minimapRect != null) {
+        if (minimapRect == null) {
+            return null;
+        } else {
             return new Rect(
                     minimapPreviewLeft,
                     minimapRect.top,
                     minimapPreviewRight,
                     minimapRect.bottom
             );
-        } else {
-            return null;
         }
     }
 
