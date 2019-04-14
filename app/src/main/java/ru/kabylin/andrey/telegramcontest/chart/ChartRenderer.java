@@ -448,16 +448,22 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
 
         for (final AxisVertex vertex : state.previewAxisY) {
-            final int opacity = (int) (vertex.opacity * state.chartsOpacity * 255f);
+            float opacity = vertex.opacity * state.chartsOpacity;
+
+            if (state.chartType == ChartType.LINES_2Y) {
+                opacity *= state.charts.get(0).opacity;
+            }
+
+            final int alpha = (int) (opacity * 255f);
             final float y = vertex.y - state.axisYTextOffsetY + vertex.yOffset;
 
-            if (opacity > 0 && y <= previewRect.bottom) {
+            if (alpha > 0 && y <= previewRect.bottom) {
                 paint.setTextAlign(Paint.Align.LEFT);
 
                 if (state.chartType == ChartType.LINES || state.chartType == ChartType.LINES_2Y) {
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setColor(style.chartBackgroundColor);
-                    paint.setAlpha(opacity);
+                    paint.setAlpha(alpha);
                     paint.setStrokeWidth(MeasureUtils.convertDpToPixel(4));
                     canvas.drawText(vertex.title, vertex.x, y, paint);
                 }
@@ -470,7 +476,7 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
                     paint.setColor(style.chartAxisTextColor);
                 }
 
-                paint.setAlpha(opacity);
+                paint.setAlpha(alpha);
                 canvas.drawText(vertex.title, vertex.x, y, paint);
             }
         }
@@ -486,7 +492,7 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         paint.setTextSize((int) MeasureUtils.convertDpToPixel(14));
 
         for (final AxisVertex vertex : state.previewAxisY2) {
-            final int alpha = chartsAlpha(vertex.opacity);
+            final int alpha = chartsAlpha(vertex.opacity * state.chartsOpacity * state.charts.get(1).opacity);
             final float y = vertex.y - state.axisYTextOffsetY + vertex.yOffset;
 
             if (alpha > 0 && y <= previewRect.bottom) {
