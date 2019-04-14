@@ -80,14 +80,7 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculateMinimapPoints(final Rect rect) {
-        if (chartState.minimapRect == null) {
-            chartState.minimapRect = rect;
-            // it'll clamp automatically to border
-            setMinimapPosition(9999999);
-        } else {
-            chartState.minimapRect = rect;
-        }
-
+        chartState.minimapRect = rect;
         findMaxByYInCharts(chartState.charts);
 
         for (final ChartData chartData : chartState.charts) {
@@ -97,13 +90,7 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void calculate2YMinimapPoints(Rect rect) {
-        if (chartState.minimapRect == null) {
-            chartState.minimapRect = rect;
-            // it'll clamp automatically to border
-            setMinimapPosition(9999999);
-        } else {
-            chartState.minimapRect = rect;
-        }
+        chartState.minimapRect = rect;
 
         for (final ChartData chartData : chartState.charts) {
             final float max = findMaxByY(chartData.originalData).y;
