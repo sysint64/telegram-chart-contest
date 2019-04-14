@@ -257,7 +257,7 @@ final class Popup {
     }
 
     boolean onTouchEvent(MotionEvent event) {
-        if (!isVisible) {
+        if (!isVisible || arrowIcon == null) {
             return false;
         }
 

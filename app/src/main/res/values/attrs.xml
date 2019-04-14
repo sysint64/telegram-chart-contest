@@ -15,5 +15,7 @@
         <attr name="chartMinimapOverlayColor" format="reference"/>
         <attr name="chartMinimapBorderColor" format="reference"/>
         <attr name="chartBackgroundColor" format="reference"/>
+        <attr name="chartPopupItemColor" format="reference"/>
+        <attr name="chartZoomColor" format="reference"/>
     </declare-styleable>
 </resources>

@@ -97,6 +97,12 @@ public class JsonDataProvider implements DataProvider {
             chartState.normilizeByMin = true;
         }
 
+        if (jsonObject.optBoolean("percentage", false)) {
+            chartState.normilizeToPercentage = true;
+            chartState.normalizeDataToPercentage();
+            chartState.yAxisLines = 4;
+        }
+
         return chartState;
     }
 }

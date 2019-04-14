@@ -3,6 +3,7 @@ package ru.kabylin.andrey.telegramcontest.chart;
 class Vertex {
     float x = 0;
     float y = 0;
+    float yCopy = 0;
     String title = "";
     String yValue = "";
     String xValue = "";

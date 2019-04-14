@@ -20,6 +20,7 @@ import java.lang.ref.WeakReference;
 import ru.kabylin.andrey.telegramcontest.ChartViewLayoutManager;
 import ru.kabylin.andrey.telegramcontest.R;
 import ru.kabylin.andrey.telegramcontest.helpers.MathUtils;
+import ru.kabylin.andrey.telegramcontest.helpers.MeasureUtils;
 
 public final class ChartView extends View implements OnChartStateRetrieved, PopupOnClickListener {
     private ChartStyle style = new ChartStyle();
@@ -92,6 +93,9 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
         @ColorRes final int chartPopupColorTitleRes = a.getResourceId(R.styleable.ChartView_chartPopupTitleColor, R.color.lightThemeChartPopupTitle);
         style.chartColorPopupTitleColor = getResources().getColor(chartPopupColorTitleRes);
 
+        @ColorRes final int chartPopupColorItemRes = a.getResourceId(R.styleable.ChartView_chartPopupItemColor, R.color.lightThemeChartPopupTitle);
+        style.chartColorPopupItemColor = getResources().getColor(chartPopupColorItemRes);
+
         @ColorRes final int chartPopupLineColorRes = a.getResourceId(R.styleable.ChartView_chartPopupLineColor, R.color.lightThemeChartPopupLine);
         style.chartPopupLineColor = getResources().getColor(chartPopupLineColorRes);
 
@@ -106,14 +110,21 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
     }
 
     public void setChartState(ChartState chartState) {
-//        chartState.normalizeDataToPercentage();
-//        chartState.sortStackedArea();
-//        chartState.yAxisLines = 4;
         chartState.popup.setPopupOnClickListener(this);
-        chartState.popup.arrowIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_chevron_right, null);
-        chartState.popup.arrowIcon.mutate();
+
+        if (!chartState.normilizeToPercentage) {
+            chartState.popup.arrowIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_chevron_right, getContext().getTheme());
+            chartState.popup.arrowIcon.mutate();
+        }
 
         chartRendererZoomedOut.setChartState(chartState, getResources());
+
+        if (chartState.zoomed) {
+            currentChartRenderer = chartRendererZoomedIn;
+            currentChartRenderer.setChartState(chartState.zoomedChartState, getResources());
+            userInteractor.setChartSolver(chartRendererZoomedIn.chartSolver);
+        }
+
         minimapPreviewLeftState = chartState.minimapPreviewLeft;
         minimapPreviewRightState = chartState.minimapPreviewRight;
         minimapPreviewLeft = minimapPreviewLeftState;
@@ -182,18 +193,20 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
     }
 
     private void drawMinimapPreview(Canvas canvas) {
-        final ChartState state = chartRendererZoomedOut.chartSolver.getState();
+        final ChartState state = currentChartRenderer.chartSolver.getState();
         final Rect previewRect = state.getMinimapPreviewRect();
 
         if (previewRect == null) {
             return;
         }
 
+        int dp1 = (int) MeasureUtils.convertDpToPixel(1);
+
         // Overlay
         paint.setColor(style.chartMinimapOverlayColor);
 
-        minimapOverlayLeftRect.set(state.minimapRect.left, state.minimapRect.top, (int) minimapPreviewLeft, state.minimapRect.bottom);
-        minimapOverlayRightRect.set((int) minimapPreviewRight, state.minimapRect.top, state.minimapRect.right, state.minimapRect.bottom);
+        minimapOverlayLeftRect.set(state.minimapRect.left, state.minimapRect.top, (int) minimapPreviewLeft, state.minimapRect.bottom + dp1);
+        minimapOverlayRightRect.set((int) minimapPreviewRight, state.minimapRect.top, state.minimapRect.right, state.minimapRect.bottom + dp1);
 
         canvas.drawRect(minimapOverlayLeftRect, paint);
         canvas.drawRect(minimapOverlayRightRect, paint);
@@ -205,14 +218,14 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
                 (int) minimapPreviewLeft,
                 previewRect.top,
                 (int) minimapPreviewLeft + state.minimapPreviewRenderResizeAreaSize,
-                previewRect.bottom
+                previewRect.bottom + dp1
         );
 
         minimapBorderRightRect.set(
                 (int) minimapPreviewRight - state.minimapPreviewRenderResizeAreaSize,
                 previewRect.top,
                 (int) minimapPreviewRight,
-                previewRect.bottom
+                previewRect.bottom + dp1
         );
 
         minimapBorderTopRect.set(
@@ -226,7 +239,7 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
                 (int) minimapPreviewLeft + state.minimapPreviewRenderResizeAreaSize,
                 previewRect.bottom - state.minimapPreviewBorderHeight,
                 (int) minimapPreviewRight - state.minimapPreviewRenderResizeAreaSize,
-                previewRect.bottom
+                previewRect.bottom + dp1
         );
 
         canvas.drawRect(minimapBorderLeftRect, paint);

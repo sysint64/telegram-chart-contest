@@ -115,6 +115,12 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
             return;
         }
 
+        final ChartState chartState = chartSolver.getState();
+
+        if (chartState.buttons.size() > 1) {
+            updateButtonPositions();
+        }
+
         drawMinimap(canvas);
         drawPreview(canvas);
         drawPopupUnderLine(canvas);
@@ -125,9 +131,9 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
         drawAxisYGrid(canvas);
         drawPopup(canvas);
 
-        updateButtonPositions();
-
-        final ChartState chartState = chartSolver.getState();
+        if (chartState.buttons.size() == 1) {
+            return;
+        }
 
         for (final ChartButton button : chartState.buttons) {
             final ChartState state = chartSolver.getState();
@@ -600,6 +606,7 @@ public final class ChartRenderer implements OnPopupEventsListener, ChartButtonOn
 
         state.popup.chartColorPopupColor = style.chartColorPopupColor;
         state.popup.chartColorPopupTitleColor = style.chartColorPopupTitleColor;
+        state.popup.itemTitleColor = style.chartColorPopupItemColor;
         state.popup.draw(canvas, state.previewRect);
     }
 

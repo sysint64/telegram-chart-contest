@@ -7,6 +7,7 @@ final class ChartStyle {
     int chartGridColor = Color.BLACK;
     int chartColorPopupColor = Color.BLACK;
     int chartColorPopupTitleColor = Color.BLACK;
+    int chartColorPopupItemColor = Color.BLACK;
     int chartPopupLineColor = Color.BLACK;
     int chartMinimapOverlayColor = Color.BLACK;
     int chartMinimapBorderColor = Color.BLACK;

@@ -273,7 +273,7 @@ public class ChartSolverImpl implements ChartSolver {
 
             chartState.rangeTitle = leftTitle + " - " + rightTitle;
 
-            if (onChangeChartVisibleRangeListener != null) {
+            if (onChangeChartVisibleRangeListener != null && !leftTitle.equals("?") && !rightTitle.equals("?")) {
                 onChangeChartVisibleRangeListener.onChangeChartVisibleRangeListener(leftTitle + " - " + rightTitle);
             }
         }
@@ -573,6 +573,10 @@ public class ChartSolverImpl implements ChartSolver {
 
         chartState.chartsOpacity = MathUtils.clamp(chartState.chartsOpacity, 0.0f, 1.0f);
         chartState.chartsScale = MathUtils.clamp(chartState.chartsScale, 0.0f, 1.0f);
+
+        if (chartState.normilizeToPercentage) {
+            chartState.normalizeDataToPercentage();
+        }
     }
 
     @Override
@@ -581,10 +585,15 @@ public class ChartSolverImpl implements ChartSolver {
             if (chart.name.equals(name)) {
                 chart.isVisible = visibility;
 
-                if (chartState.chartType != ChartType.BARS && chartState.chartType != ChartType.STACKED_AREA) {
-                    chart.stateOpacity = chart.isVisible ? 1f : 0f;
-                } else {
+                if (chartState.chartType == ChartType.BARS) {
                     chart.stateScale = chart.isVisible ? 1f : 0f;
+                } else if (chartState.chartType == ChartType.STACKED_AREA) {
+                    chart.stateOpacity = chart.isVisible ? 1f : 0f;
+                    chart.stateScale = chart.isVisible ? 1f : 0f;
+                    chart.opacity = chart.isVisible ? 1f : 0f;
+                    chart.scale = chart.isVisible ? 1f : 0f;
+                } else {
+                    chart.stateOpacity = chart.isVisible ? 1f : 0f;
                 }
 
                 return true;
@@ -938,6 +947,7 @@ public class ChartSolverImpl implements ChartSolver {
             return null;
         }
 
+        chartState.zoomed = true;
         chartState.popup.hide();
 
         chartState.chartsScaleState = 1f;
@@ -963,6 +973,7 @@ public class ChartSolverImpl implements ChartSolver {
                 }
             }
 
+            chartState.zoomedChartState = zoomedState;
             return zoomedState;
         } catch (IOException e) {
             e.printStackTrace();
@@ -975,6 +986,7 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void zoomIn() {
+        chartState.zoomed = true;
         chartState.popup.hide();
         chartState.chartsScaleState = 1f;
         chartState.chartsOpacityState = 0f;
@@ -982,6 +994,7 @@ public class ChartSolverImpl implements ChartSolver {
 
     @Override
     public void zoomOut() {
+        chartState.zoomed = false;
         chartState.popup.hide();
         chartState.chartsScaleState = 0f;
         chartState.chartsOpacityState = 1f;

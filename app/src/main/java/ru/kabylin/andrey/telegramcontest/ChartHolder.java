@@ -40,6 +40,14 @@ public class ChartHolder extends RecyclerItemHolder<ChartRecyclerItem> implement
 
         titleTextView.setText(data.title);
         rangeTitleTextView.setText(state.rangeTitle);
+
+        if (state.zoomed) {
+            zoomOutButton.setVisibility(View.VISIBLE);
+            titleTextView.setVisibility(View.INVISIBLE);
+        } else {
+            zoomOutButton.setVisibility(View.INVISIBLE);
+            titleTextView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

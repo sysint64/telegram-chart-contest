@@ -38,6 +38,9 @@ public final class ChartState implements Parcelable {
     int chartIndex = 1;
     final List<ChartButton> buttons = new ArrayList<>();
     public String rangeTitle = "?";
+    boolean normilizeToPercentage = false;
+    public boolean zoomed = false;
+    ChartState zoomedChartState = null;
 
     float previewMaxYChangeSpeed = 150f;
     float opacityChangeSpeed = 150f;
@@ -117,13 +120,24 @@ public final class ChartState implements Parcelable {
         minimapRect = in.readParcelable(Rect.class.getClassLoader());
         previewRect = in.readParcelable(Rect.class.getClassLoader());
         isInitPreviewMinMaxY = in.readByte() != 0;
+        normilizeByMin = in.readByte() != 0;
         statePreviewMaxY = in.readFloat();
         statePreviewMaxY2 = in.readFloat();
+        statePreviewMinY = in.readFloat();
+        statePreviewMinY2 = in.readFloat();
         previewMaxY = in.readFloat();
         previewMaxY2 = in.readFloat();
+        previewMinY = in.readFloat();
+        previewMinY2 = in.readFloat();
         showTime = in.readByte() != 0;
+        chartIndex = in.readInt();
+        rangeTitle = in.readString();
+        normilizeToPercentage = in.readByte() != 0;
+        zoomed = in.readByte() != 0;
+        zoomedChartState = in.readParcelable(ChartState.class.getClassLoader());
         previewMaxYChangeSpeed = in.readFloat();
         opacityChangeSpeed = in.readFloat();
+        stackedScaleChangeSpeed = in.readFloat();
         minimapMaxYChangeSpeed = in.readFloat();
         axisXOpacityChangeSpeed = in.readFloat();
         axisYOpacityChangeSpeed = in.readFloat();
@@ -131,6 +145,7 @@ public final class ChartState implements Parcelable {
         popupOpacityChangeSpeed = in.readFloat();
         zoomOpacityChangeSpeed = in.readFloat();
         zoomScaleChangeSpeed = in.readFloat();
+        yAxisLines = in.readInt();
         chartsOpacity = in.readFloat();
         chartsOpacityState = in.readFloat();
         chartsScale = in.readFloat();
@@ -145,6 +160,7 @@ public final class ChartState implements Parcelable {
         minAxisYDelta = in.readFloat();
         intersectPointSize = in.readFloat();
         intersectPointStrokeWidth = in.readFloat();
+        intersectX = in.readFloat();
         lastStatePreviewMaxY = in.readFloat();
         lastStatePreviewMaxY2 = in.readFloat();
         isInit = in.readByte() != 0;
@@ -162,13 +178,24 @@ public final class ChartState implements Parcelable {
         dest.writeParcelable(minimapRect, flags);
         dest.writeParcelable(previewRect, flags);
         dest.writeByte((byte) (isInitPreviewMinMaxY ? 1 : 0));
+        dest.writeByte((byte) (normilizeByMin ? 1 : 0));
         dest.writeFloat(statePreviewMaxY);
         dest.writeFloat(statePreviewMaxY2);
+        dest.writeFloat(statePreviewMinY);
+        dest.writeFloat(statePreviewMinY2);
         dest.writeFloat(previewMaxY);
         dest.writeFloat(previewMaxY2);
+        dest.writeFloat(previewMinY);
+        dest.writeFloat(previewMinY2);
         dest.writeByte((byte) (showTime ? 1 : 0));
+        dest.writeInt(chartIndex);
+        dest.writeString(rangeTitle);
+        dest.writeByte((byte) (normilizeToPercentage ? 1 : 0));
+        dest.writeByte((byte) (zoomed ? 1 : 0));
+        dest.writeParcelable(zoomedChartState, flags);
         dest.writeFloat(previewMaxYChangeSpeed);
         dest.writeFloat(opacityChangeSpeed);
+        dest.writeFloat(stackedScaleChangeSpeed);
         dest.writeFloat(minimapMaxYChangeSpeed);
         dest.writeFloat(axisXOpacityChangeSpeed);
         dest.writeFloat(axisYOpacityChangeSpeed);
@@ -176,6 +203,7 @@ public final class ChartState implements Parcelable {
         dest.writeFloat(popupOpacityChangeSpeed);
         dest.writeFloat(zoomOpacityChangeSpeed);
         dest.writeFloat(zoomScaleChangeSpeed);
+        dest.writeInt(yAxisLines);
         dest.writeFloat(chartsOpacity);
         dest.writeFloat(chartsOpacityState);
         dest.writeFloat(chartsScale);
@@ -190,6 +218,7 @@ public final class ChartState implements Parcelable {
         dest.writeFloat(minAxisYDelta);
         dest.writeFloat(intersectPointSize);
         dest.writeFloat(intersectPointStrokeWidth);
+        dest.writeFloat(intersectX);
         dest.writeFloat(lastStatePreviewMaxY);
         dest.writeFloat(lastStatePreviewMaxY2);
         dest.writeByte((byte) (isInit ? 1 : 0));
@@ -245,16 +274,33 @@ public final class ChartState implements Parcelable {
             for (final ChartData chart : charts) {
                 Vertex vertex = chart.originalData.get(i);
 
-                if (max < vertex.y) {
-                    max = vertex.y;
+                if (!isInit) {
+                    if (max < vertex.y) {
+                        max = vertex.y;
+                    }
+                } else {
+                    if (max < vertex.yCopy * chart.scale) {
+                        max = vertex.yCopy * chart.scale;
+                    }
                 }
             }
 
             for (final ChartData chart : charts) {
                 final Vertex vertex = chart.originalData.get(i);
-                final float percents = (vertex.y / max) * 100f;
+                final float percents;
+
+                if (isInit) {
+                    percents = (vertex.yCopy / max) * 100f;
+                } else {
+                    percents = (vertex.y / max) * 100f;
+                }
+
                 final String title = String.valueOf(Math.round(percents)) + "%";
-                vertex.y = percents;
+                vertex.y = percents * chart.scale;
+
+                if (!isInit) {
+                    vertex.yCopy = vertex.y;
+                }
 
                 chart.originalData.get(i).yValue = title;
                 chart.minimapPointsPool.get(i).yValue = title;

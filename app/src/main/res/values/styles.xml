@@ -10,6 +10,7 @@
         <item name="chartGridColor">@color/lightThemeChartGrid</item>
         <item name="chartPopupColor">@color/lightThemeChartPopup</item>
         <item name="chartPopupTitleColor">@color/lightThemeChartPopupTitle</item>
+        <item name="chartPopupItemColor">@color/lightThemeTitleText</item>
         <item name="chartPopupLineColor">@color/lightThemeChartPopupLine</item>
         <item name="chartMinimapOverlayColor">@color/lightThemeChartMinimapOverlay</item>
         <item name="chartMinimapBorderColor">@color/lightThemeChartMinimapBorder</item>
@@ -17,6 +18,7 @@
         <item name="regularTextColor">@color/lightThemeRegularTextColor</item>
         <item name="hrColor">@color/lightThemeHr</item>
         <item name="chartTitleTextColor">@color/lightThemeTitleText</item>
+        <item name="chartZoomColor">@color/lightThemeZoomColor</item>
     </style>
 
     <style name="AppNightTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -28,6 +30,7 @@
         <item name="chartAxisTextColor">@color/nightThemeChartAxisText</item>
         <item name="chartGridColor">@color/nightThemeChartGrid</item>
         <item name="chartPopupColor">@color/nightThemeChartPopup</item>
+        <item name="chartPopupItemColor">@color/nightThemeTitleText</item>
         <item name="chartPopupTitleColor">@color/nightThemeChartPopupTitle</item>
         <item name="chartPopupLineColor">@color/nightThemeChartPopupLine</item>
         <item name="chartMinimapOverlayColor">@color/nightThemeChartMinimapOverlay</item>
@@ -36,5 +39,6 @@
         <item name="regularTextColor">@color/nightThemeRegularTextColor</item>
         <item name="hrColor">@color/nightThemeHr</item>
         <item name="chartTitleTextColor">@color/nightThemeTitleText</item>
+        <item name="chartZoomColor">@color/nightThemeZoomColor</item>
     </style>
 </resources>

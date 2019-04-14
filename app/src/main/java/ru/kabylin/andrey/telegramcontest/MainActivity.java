@@ -58,7 +58,10 @@ public class MainActivity extends AppCompatActivity implements HolderFactory<Cha
     private void loadCharts() {
         try {
             JsonDataProvider dataProvider = new JsonDataProvider();
-            chartsStates.add(dataProvider.getOverview(getAssets(), 5));
+
+            for (int i = 1; i <= 5; ++i) {
+                chartsStates.add(dataProvider.getOverview(getAssets(), i));
+            }
             fillCharts();
         } catch (IOException | JSONException e) {
             Log.e("MainActivity", "JSON LOAD ERROR");
