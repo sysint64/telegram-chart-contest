@@ -281,7 +281,7 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
 
         @Override
         protected void onPostExecute(ChartState result) {
-            if (onChartStateRetrieved.get() != null && result != null) {
+            if (onChartStateRetrieved.get() != null) {
                 onChartStateRetrieved.get().onChartStateRetrieved(result);
             }
         }
@@ -289,6 +289,11 @@ public final class ChartView extends View implements OnChartStateRetrieved, Popu
 
     @Override
     public void onChartStateRetrieved(ChartState chartState) {
+        if (chartState == null) {
+            zoomOut();
+            return;
+        }
+
         chartRendererZoomedIn.setChartState(chartState, getResources());
         chartRendererZoomedIn.chartSolver.zoomOut();
         currentChartRenderer = chartRendererZoomedIn;
